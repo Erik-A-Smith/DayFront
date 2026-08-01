@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<d:multistatus xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
+  <d:response>
+    <d:href>/dayfront/personal/event-1.ics</d:href>
+    <d:propstat><d:prop><d:getetag>"event-v1"</d:getetag><c:calendar-data>BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//DayFront Test//EN
+BEGIN:VEVENT
+UID:event-1
+DTSTAMP:20260731T120000Z
+DTSTART:20260801T140000Z
+DTEND:20260801T150000Z
+SUMMARY:Fixture event
+END:VEVENT
+END:VCALENDAR
+</c:calendar-data></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat>
+  </d:response>
+</d:multistatus>

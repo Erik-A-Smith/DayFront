@@ -1,0 +1,36 @@
+{
+  "name": "@dayfront/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b && vite build",
+    "dev": "vite",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc -b --pretty false"
+  },
+  "dependencies": {
+    "@dayfront/shared": "workspace:*",
+    "@fullcalendar/core": "6.1.21",
+    "@fullcalendar/daygrid": "6.1.21",
+    "@fullcalendar/interaction": "6.1.21",
+    "@fullcalendar/list": "6.1.21",
+    "@fullcalendar/react": "6.1.21",
+    "@fullcalendar/timegrid": "6.1.21",
+    "@vitejs/plugin-react": "6.0.5",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "vite": "8.2.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "6.6.4",
+    "@testing-library/react": "16.3.0",
+    "@types/node": "24.2.1",
+    "@types/react": "19.1.9",
+    "@types/react-dom": "19.1.7",
+    "jsdom": "26.1.0",
+    "typescript": "5.9.2",
+    "vitest": "4.1.10"
+  }
+}

@@ -1,0 +1,40 @@
+services:
+  dayfront:
+    build:
+      context: .
+    image: dayfront:local
+    container_name: dayfront
+    restart: unless-stopped
+    ports:
+      - '8080:8080'
+    environment:
+      - TZ=${TZ:-UTC}
+      - DAYFRONT_CONFIG_FILE=/config/config.yaml
+      # Passed through only when explicitly set; otherwise config.yaml wins.
+      - DAYFRONT_CALENDAR_TIMEZONE
+    volumes:
+      - ./config.yaml:/config/config.yaml:ro
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:8080/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+
+  radicale:
+    image: tomsquest/docker-radicale:3.7.6.0
+    profiles: ['local-radicale']
+    restart: unless-stopped
+    volumes:
+      - radicale-data:/data
+
+volumes:
+  radicale-data:

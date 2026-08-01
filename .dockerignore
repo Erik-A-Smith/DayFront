@@ -1,0 +1,14 @@
+.git
+.agents
+.codex
+node_modules
+**/node_modules
+**/dist
+coverage
+.env
+.env.*
+config.yaml
+dayfront.yaml
+*.log
+.idea
+.vscode

@@ -1,0 +1,42 @@
+caldav:
+  url: http://radicale:5232
+  username: dayfront
+  password: change-me
+  timeoutMs: 10000
+
+server:
+  host: 0.0.0.0
+  port: 8080
+  trustProxy: false
+
+ui:
+  defaultView: month
+  darkMode: auto
+  sidebar:
+    # enabled removes or includes the sidebar feature; defaultOpen controls its
+    # initial collapsed state when enabled.
+    enabled: true
+    defaultOpen: true
+    showBrand: true
+    showTasks: true
+    showCalendars: true
+
+calendar:
+  # Browser-local display, UTC, or an IANA name such as Europe/Berlin.
+  timezone: local
+  weekStartsOn: locale
+  maxOccurrences: 5000
+
+# Optional display-only external iCalendar feeds. Invalid entries are logged
+# and ignored without preventing DayFront from starting.
+calendar_subscriptions:
+  # - id: quebec-holidays
+  #   name: Quebec Holidays
+  #   url: https://example.com/quebec-holidays.ics
+  #   enabled: true
+  #   color: "#3b82f6"
+  #   refresh_interval: 24h
+
+logging:
+  level: info
+  format: pretty
