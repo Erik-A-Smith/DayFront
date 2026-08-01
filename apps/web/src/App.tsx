@@ -992,7 +992,11 @@ export function App() {
                 D
               </span>
               <div>
-                <p className="eyebrow">Own your day. Own your data.</p>
+                <p className="eyebrow">
+                  Own your day.
+                  <br />
+                  Own your data.
+                </p>
                 <h1>DayFront</h1>
               </div>
             </header>

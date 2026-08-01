@@ -4,6 +4,8 @@
 
 _Own your day. Own your data._
 
+![DayFront month view with CalDAV calendars, events, and tasks](docs/images/dayfront-calendar.png)
+
 DayFront is a modern, self-hosted web interface for calendars and tasks stored on an existing CalDAV server.
 
 DayFront uses standard CalDAV and WebDAV discovery rather than Radicale-specific APIs. Radicale is the bundled development and integration-test server; other standards-compliant CalDAV servers can be used through the same `caldav` configuration.
