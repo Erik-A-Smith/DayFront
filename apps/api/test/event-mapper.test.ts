@@ -9,7 +9,7 @@ import {
 
 function resource(calendarData: string): CalendarResource {
   return {
-    url: 'http://radicale.test/calendars/personal/recurring.ics',
+    url: 'http://caldav.test/calendars/personal/recurring.ics',
     etag: '"v1"',
     calendarData,
   };
@@ -145,13 +145,13 @@ describe('recurring event mapping', () => {
 
 describe('calendar resource identifiers', () => {
   it('accepts only normalized HTTP calendar resource URLs', () => {
-    const valid = 'https://radicale.test/calendars/personal/event.ics';
+    const valid = 'https://caldav.test/calendars/personal/event.ics';
     expect(resourceUrl(Buffer.from(valid).toString('base64url'))).toBe(valid);
     for (const invalid of [
       'file:///etc/passwd',
-      'https://user:secret@radicale.test/event.ics',
-      'https://radicale.test/admin',
-      'https://radicale.test/event.ics?delete=true',
+      'https://user:secret@caldav.test/event.ics',
+      'https://caldav.test/admin',
+      'https://caldav.test/event.ics?delete=true',
     ]) {
       expect(() =>
         resourceUrl(Buffer.from(invalid).toString('base64url')),

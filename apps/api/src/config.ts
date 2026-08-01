@@ -167,12 +167,6 @@ function subscriptions(value: unknown): {
 }
 
 const envPaths = {
-  // Legacy Radicale names remain supported; canonical CalDAV variables below
-  // take precedence when both are present.
-  DAYFRONT_RADICALE_URL: ['caldav', 'url'],
-  DAYFRONT_RADICALE_USERNAME: ['caldav', 'username'],
-  DAYFRONT_RADICALE_PASSWORD: ['caldav', 'password'],
-  DAYFRONT_RADICALE_TIMEOUT_MS: ['caldav', 'timeoutMs'],
   DAYFRONT_CALDAV_URL: ['caldav', 'url'],
   DAYFRONT_CALDAV_USERNAME: ['caldav', 'username'],
   DAYFRONT_CALDAV_PASSWORD: ['caldav', 'password'],
@@ -196,7 +190,6 @@ const envPaths = {
 } as const;
 
 const numericVariables = new Set([
-  'DAYFRONT_RADICALE_TIMEOUT_MS',
   'DAYFRONT_CALDAV_TIMEOUT_MS',
   'DAYFRONT_SERVER_PORT',
   'DAYFRONT_CALENDAR_MAX_OCCURRENCES',
@@ -288,16 +281,6 @@ export function loadConfig(options: LoadConfigOptions = {}): DayFrontConfig {
   const explicitPath = options.configFile ?? environment.DAYFRONT_CONFIG_FILE;
   const path = explicitPath ?? '/config/config.yaml';
   const yaml = readYaml(path, explicitPath !== undefined);
-  const legacyWarnings: string[] = [];
-  if (yaml.radicale !== undefined) {
-    if (yaml.caldav === undefined) yaml.caldav = yaml.radicale;
-    legacyWarnings.push(
-      yaml.caldav === yaml.radicale
-        ? 'The radicale configuration key is deprecated; rename it to caldav.'
-        : 'The deprecated radicale configuration key was ignored because caldav is also configured.',
-    );
-    delete yaml.radicale;
-  }
   const parsedSubscriptions = subscriptions(yaml.calendar_subscriptions);
   delete yaml.calendar_subscriptions;
   const candidate = merge(
@@ -314,10 +297,7 @@ export function loadConfig(options: LoadConfigOptions = {}): DayFrontConfig {
       ),
     );
   }
-  configurationWarnings.set(result.data, [
-    ...legacyWarnings,
-    ...parsedSubscriptions.warnings,
-  ]);
+  configurationWarnings.set(result.data, parsedSubscriptions.warnings);
   return result.data;
 }
 

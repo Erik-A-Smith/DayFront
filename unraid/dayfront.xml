@@ -10,6 +10,7 @@
   <Project/>
   <Overview>Modern self-hosted calendar and task interface for an existing CalDAV server. DayFront has no built-in user login; expose it only through a trusted network or authenticating reverse proxy.</Overview>
   <Category>Productivity:</Category>
+  <Icon>https://raw.githubusercontent.com/Erik-A-Smith/DayFront/main/apps/web/public/dayfront-logo-tile.png</Icon>
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
   <ExtraParams>--security-opt no-new-privileges=true</ExtraParams>
   <PostArgs/>

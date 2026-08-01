@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="apps/web/public/dayfront-logo.png" />
+    <img src="apps/web/public/dayfront-logo-tile.png" width="180" alt="DayFront logo" />
+  </picture>
+</p>
+
 # DayFront
 
 **The open-source CalDAV frontend.**
@@ -8,7 +15,7 @@ _Own your day. Own your data._
 
 DayFront is a modern, self-hosted web interface for calendars and tasks stored on an existing CalDAV server.
 
-DayFront uses standard CalDAV and WebDAV discovery rather than Radicale-specific APIs. Radicale is the bundled development and integration-test server; other standards-compliant CalDAV servers can be used through the same `caldav` configuration.
+DayFront uses standard CalDAV and WebDAV discovery and connects to standards-compliant CalDAV servers through the `caldav` configuration.
 
 > **Status:** Pre-release. The core calendar and task workflows are functional, but the project is undergoing V1 testing, documentation, security scanning, and deployment validation.
 
@@ -25,7 +32,7 @@ DayFront uses standard CalDAV and WebDAV discovery rather than Radicale-specific
 - Light and dark themes
 - Docker, Compose, and Unraid deployment support
 
-CalDAV implementations vary in optional features and edge-case behavior. Radicale is covered by the integration suite; reports and compatibility fixes for other servers are welcome.
+CalDAV implementations vary in optional features and edge-case behavior. Compatibility reports and fixes for different servers are welcome.
 
 ## Security boundary
 

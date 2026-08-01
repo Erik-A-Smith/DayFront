@@ -28,13 +28,3 @@ services:
       retries: 3
     security_opt:
       - no-new-privileges:true
-
-  radicale:
-    image: tomsquest/docker-radicale:3.7.6.0
-    profiles: ['local-radicale']
-    restart: unless-stopped
-    volumes:
-      - radicale-data:/data
-
-volumes:
-  radicale-data:

@@ -13,7 +13,7 @@ const fixtures = resolve(import.meta.dirname, '../../../tests/fixtures/caldav');
 const fixture = (name: string) => readFileSync(resolve(fixtures, name), 'utf8');
 
 const config = {
-  url: 'http://radicale.test:5232',
+  url: 'http://caldav.test:5232',
   username: 'dayfront',
   password: 'secret',
   timeoutMs: 1_000,
@@ -53,8 +53,8 @@ describe('CalDavClient', () => {
 
     const result = await client.discover();
 
-    expect(result.principalUrl).toBe('http://radicale.test:5232/dayfront/');
-    expect(result.calendarHomeUrl).toBe('http://radicale.test:5232/dayfront/');
+    expect(result.principalUrl).toBe('http://caldav.test:5232/dayfront/');
+    expect(result.calendarHomeUrl).toBe('http://caldav.test:5232/dayfront/');
     expect(result.calendars).toEqual([
       expect.objectContaining({
         displayName: 'Personal',
@@ -74,13 +74,13 @@ describe('CalDavClient', () => {
     const client = new CalDavClient(config, { fetch: fetchMock });
 
     const resources = await client.queryCalendar(
-      'http://radicale.test:5232/dayfront/personal/',
+      'http://caldav.test:5232/dayfront/personal/',
       new Date('2026-08-01T00:00:00.123Z'),
       new Date('2026-09-01T00:00:00.987Z'),
     );
 
     expect(resources[0]).toMatchObject({
-      url: 'http://radicale.test:5232/dayfront/personal/event-1.ics',
+      url: 'http://caldav.test:5232/dayfront/personal/event-1.ics',
       etag: '"event-v1"',
     });
     expect(resources[0]?.calendarData).toContain('UID:event-1');
@@ -104,13 +104,13 @@ describe('CalDavClient', () => {
 
     await expect(
       client.putResource(
-        'http://radicale.test:5232/dayfront/personal/event.ics',
+        'http://caldav.test:5232/dayfront/personal/event.ics',
         fixture('event.ics'),
         '"v1"',
       ),
     ).resolves.toBe('"v2"');
     await client.deleteResource(
-      'http://radicale.test:5232/dayfront/personal/event.ics',
+      'http://caldav.test:5232/dayfront/personal/event.ics',
       '"v2"',
     );
 
@@ -137,16 +137,16 @@ describe('CalDavClient', () => {
     };
 
     await client.createCalendar(
-      'http://radicale.test:5232/dayfront/',
-      'http://radicale.test:5232/dayfront/new-calendar/',
+      'http://caldav.test:5232/dayfront/',
+      'http://caldav.test:5232/dayfront/new-calendar/',
       input,
     );
     await client.updateCalendar(
-      'http://radicale.test:5232/dayfront/new-calendar/',
+      'http://caldav.test:5232/dayfront/new-calendar/',
       input,
     );
     await client.deleteCalendar(
-      'http://radicale.test:5232/dayfront/new-calendar/',
+      'http://caldav.test:5232/dayfront/new-calendar/',
     );
 
     expect(fetchMock.mock.calls.map((call) => call[1]?.method)).toEqual([
@@ -215,7 +215,7 @@ describe('CalDavClient', () => {
 
     await expect(
       client.queryCalendar(
-        'http://radicale.test:5232/dayfront/personal/',
+        'http://caldav.test:5232/dayfront/personal/',
         new Date('2025-01-01T00:00:00Z'),
         new Date('2027-01-01T00:00:00Z'),
       ),

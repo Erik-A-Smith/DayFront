@@ -11,7 +11,7 @@ import {
 } from '../src/config.js';
 
 const requiredEnvironment = {
-  DAYFRONT_CALDAV_URL: 'http://radicale:5232',
+  DAYFRONT_CALDAV_URL: 'http://caldav.test:5232',
   DAYFRONT_CALDAV_USERNAME: 'dayfront',
   DAYFRONT_CALDAV_PASSWORD: 'secret',
 };
@@ -132,41 +132,6 @@ ui:
       showBrand: false,
       showTasks: false,
       showCalendars: true,
-    });
-  });
-
-  it('supports legacy Radicale configuration names with a warning', () => {
-    const configFile = yamlFile(`
-radicale:
-  url: https://calendar.example.test
-  username: legacy-user
-  password: legacy-secret
-`);
-    const config = loadConfig({
-      configFile,
-      environment: { DAYFRONT_RADICALE_USERNAME: 'legacy-env-user' },
-    });
-    expect(config.caldav.username).toBe('legacy-env-user');
-    expect(getConfigurationWarnings(config)).toContain(
-      'The radicale configuration key is deprecated; rename it to caldav.',
-    );
-  });
-
-  it('gives canonical CalDAV environment variables precedence over legacy names', () => {
-    const config = loadConfig({
-      environment: {
-        DAYFRONT_RADICALE_URL: 'https://legacy.example.test',
-        DAYFRONT_RADICALE_USERNAME: 'legacy',
-        DAYFRONT_RADICALE_PASSWORD: 'legacy-secret',
-        DAYFRONT_CALDAV_URL: 'https://calendar.example.test',
-        DAYFRONT_CALDAV_USERNAME: 'canonical',
-        DAYFRONT_CALDAV_PASSWORD: 'canonical-secret',
-      },
-    });
-    expect(config.caldav).toMatchObject({
-      url: 'https://calendar.example.test',
-      username: 'canonical',
-      password: 'canonical-secret',
     });
   });
 

@@ -87,7 +87,7 @@ describe('event editing', () => {
     });
     const events = mapCalendarResource(
       {
-        url: 'http://radicale.test/event.ics',
+        url: 'http://caldav.test/event.ics',
         etag: '"v2"',
         calendarData: source,
       },

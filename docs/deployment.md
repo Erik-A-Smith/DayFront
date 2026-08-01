@@ -27,14 +27,6 @@ docker compose up -d --build dayfront
 docker compose ps
 ```
 
-For a disposable local Radicale service, use the optional profile and set `caldav.url` to `http://radicale:5232`:
-
-```sh
-docker compose --profile local-radicale up -d --build
-```
-
-The optional Radicale profile exists for local development and integration testing; DayFront itself uses standard CalDAV discovery and can connect to other standards-compliant CalDAV servers. The profile stores its data in the `radicale-data` named volume. Configure Radicale authentication according to that image's documentation before using it outside local development. The Compose file pins Radicale image `3.7.6.0` rather than following `latest`.
-
 ## Configuration and environment variables
 
 Mount the YAML file at `/config/config.yaml`, which is the image's optional default configuration path. Alternatively, omit the mount and provide all required settings through environment variables. Every YAML value can be overridden with its documented environment variable:

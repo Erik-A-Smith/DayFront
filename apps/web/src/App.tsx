@@ -988,9 +988,12 @@ export function App() {
         <aside className="sidebar" id="sidebar" hidden={!sidebarOpen}>
           {sidebarSettings.showBrand && (
             <header className="brand">
-              <span className="mark" aria-hidden="true">
-                D
-              </span>
+              <img
+                className="mark"
+                src="/dayfront-logo.png"
+                alt=""
+                aria-hidden="true"
+              />
               <div>
                 <p className="eyebrow">
                   Own your day.

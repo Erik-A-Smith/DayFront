@@ -98,7 +98,7 @@ describe('task editing', () => {
 
     const tasks = mapTaskResource(
       {
-        url: 'http://radicale.test/task.ics',
+        url: 'http://caldav.test/task.ics',
         etag: '"v2"',
         calendarData: completed,
       },
@@ -117,7 +117,7 @@ describe('task editing', () => {
     expect(
       mapTaskResource(
         {
-          url: 'http://radicale.test/task.ics',
+          url: 'http://caldav.test/task.ics',
           etag: '"v3"',
           calendarData: deleted,
         },

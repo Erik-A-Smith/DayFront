@@ -55,14 +55,9 @@ input {
   gap: 0.8rem;
 }
 .mark {
-  display: grid;
-  width: 2.65rem;
-  height: 2.65rem;
-  place-items: center;
-  border-radius: 0.75rem;
-  color: #102016;
-  background: var(--accent);
-  font-weight: 800;
+  width: 3.25rem;
+  height: 3.25rem;
+  object-fit: contain;
 }
 h1,
 h2,
@@ -755,7 +750,7 @@ h1 {
     --today-ring: rgb(50 133 83 / 55%);
   }
   .mark {
-    color: white;
+    filter: invert(1);
   }
   .calendar-option {
     color: #2d3a31;
@@ -780,6 +775,9 @@ h1 {
   --today-bg: rgb(142 215 166 / 15%);
   --today-ring: rgb(142 215 166 / 70%);
 }
+:root[data-theme='dark'] .mark {
+  filter: none;
+}
 :root[data-theme='light'] {
   color: #17221b;
   background: #f7f9f7;
@@ -792,7 +790,7 @@ h1 {
   --today-ring: rgb(50 133 83 / 55%);
 }
 :root[data-theme='light'] .mark {
-  color: white;
+  filter: invert(1);
 }
 :root[data-theme='light'] .calendar-option,
 :root[data-theme='light'] .fc .fc-button-primary,

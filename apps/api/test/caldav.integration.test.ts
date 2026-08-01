@@ -7,7 +7,7 @@ import { loadConfig } from '../src/config.js';
 
 const integrationEnabled = process.env.DAYFRONT_INTEGRATION_TEST === 'true';
 
-describe.skipIf(!integrationEnabled)('Radicale integration', () => {
+describe.skipIf(!integrationEnabled)('CalDAV integration', () => {
   it('discovers calendars from the configured server', async () => {
     const config = loadConfig();
     const client = new CalDavClient(config.caldav);

@@ -7,7 +7,7 @@ DayFront favors small, readable changes and standards-compliant CalDAV behavior.
 1. Work on one numbered item from `todo.md` at a time when practical.
 2. Add or update tests with behavior changes.
 3. Run formatting, linting, type-checking, unit tests, and the production build before submitting a change.
-4. Use the CalDAV integration suite for changes involving discovery, WebDAV, iCalendar serialization, ETags, or recurrence. The repository's bundled integration server is Radicale.
+4. Use the CalDAV integration suite for changes involving discovery, WebDAV, iCalendar serialization, ETags, or recurrence.
 5. Update the foundation or user documentation when a public contract changes.
 
 The exact commands will be added during application scaffolding and exposed as root pnpm scripts. Generated files and formatter output should be produced by project scripts rather than edited manually.
@@ -32,7 +32,7 @@ Formatting and import order are enforced by the repository formatter. Lint rules
 - Shared CalDAV XML and iCalendar examples belong in `tests/fixtures` and must contain no real credentials or private calendar data.
 - Every bug fix should include a regression test.
 - Recurrence tests should use explicit expected occurrences and cover timezone or daylight-saving behavior where relevant.
-- Network tests must be deterministic. External CalDAV instances are opt-in; the standard integration suite uses the repository's pinned Radicale container configuration.
+- Network tests must be deterministic. External CalDAV instances are opt-in and must not be required by the standard test suite.
 
 ## Commits
 

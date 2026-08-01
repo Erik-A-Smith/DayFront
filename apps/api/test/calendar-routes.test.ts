@@ -23,7 +23,7 @@ const fixture = (name: string) => readFileSync(resolve(fixtures, name), 'utf8');
 const response = (name: string) => new Response(fixture(name), { status: 207 });
 const config = loadConfig({
   environment: {
-    DAYFRONT_CALDAV_URL: 'http://radicale.test:5232',
+    DAYFRONT_CALDAV_URL: 'http://caldav.test:5232',
     DAYFRONT_CALDAV_USERNAME: 'dayfront',
     DAYFRONT_CALDAV_PASSWORD: 'secret',
   },
@@ -38,7 +38,7 @@ function testApp(fetchMock: typeof fetch) {
 }
 
 describe('calendar API', () => {
-  it('lists discovered calendars without exposing Radicale URLs', async () => {
+  it('lists discovered calendars without exposing CalDAV URLs', async () => {
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(response('principal.xml'))
@@ -54,7 +54,7 @@ describe('calendar API', () => {
       displayName: 'Personal',
       components: ['VEVENT', 'VTODO'],
     });
-    expect(JSON.stringify(body)).not.toContain('radicale.test');
+    expect(JSON.stringify(body)).not.toContain('caldav.test');
   });
 
   it('updates calendar collection metadata', async () => {
@@ -68,7 +68,7 @@ describe('calendar API', () => {
       .mockResolvedValueOnce(response('home.xml'))
       .mockResolvedValueOnce(response('calendars.xml'));
     const id = createHash('sha256')
-      .update('http://radicale.test:5232/dayfront/personal/')
+      .update('http://caldav.test:5232/dayfront/personal/')
       .digest('base64url')
       .slice(0, 22);
 
@@ -174,7 +174,7 @@ describe('calendar API', () => {
         }),
       );
     });
-    const calendarUrl = 'http://radicale.test:5232/dayfront/personal/';
+    const calendarUrl = 'http://caldav.test:5232/dayfront/personal/';
     const calendarId = createHash('sha256')
       .update(calendarUrl)
       .digest('base64url')
@@ -238,7 +238,7 @@ describe('calendar API', () => {
         }),
       );
     });
-    const calendarUrl = 'http://radicale.test:5232/dayfront/personal/';
+    const calendarUrl = 'http://caldav.test:5232/dayfront/personal/';
     const calendarId = createHash('sha256')
       .update(calendarUrl)
       .digest('base64url')
@@ -263,8 +263,8 @@ describe('calendar API', () => {
   });
 
   it('moves an event resource when its calendar changes', async () => {
-    const personalUrl = 'http://radicale.test:5232/dayfront/personal/';
-    const workUrl = 'http://radicale.test:5232/dayfront/work/';
+    const personalUrl = 'http://caldav.test:5232/dayfront/personal/';
+    const workUrl = 'http://caldav.test:5232/dayfront/work/';
     const personalId = createHash('sha256')
       .update(personalUrl)
       .digest('base64url')
@@ -342,7 +342,7 @@ describe('calendar API', () => {
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValue(new Response(null, { status: 204 }));
-    const url = 'http://radicale.test:5232/dayfront/personal/event.ics';
+    const url = 'http://caldav.test:5232/dayfront/personal/event.ics';
     const resourceId = Buffer.from(url).toString('base64url');
     const app = testApp(fetchMock);
 
@@ -374,7 +374,7 @@ describe('calendar API', () => {
         }),
       );
     });
-    const url = 'http://radicale.test:5232/dayfront/personal/event.ics';
+    const url = 'http://caldav.test:5232/dayfront/personal/event.ics';
     const resourceId = Buffer.from(url).toString('base64url');
 
     await request(testApp(fetchMock))

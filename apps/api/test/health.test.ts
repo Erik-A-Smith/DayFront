@@ -13,7 +13,7 @@ import { createLogger } from '../src/logger.js';
 
 const config = loadConfig({
   environment: {
-    DAYFRONT_CALDAV_URL: 'http://radicale:5232',
+    DAYFRONT_CALDAV_URL: 'http://caldav.test:5232',
     DAYFRONT_CALDAV_USERNAME: 'dayfront',
     DAYFRONT_CALDAV_PASSWORD: 'test-secret',
   },
@@ -39,7 +39,7 @@ describe('service status', () => {
     const serialized = JSON.stringify(response.body);
     const body = publicConfigSchema.parse(response.body);
     expect(serialized).not.toContain('test-secret');
-    expect(serialized).not.toContain('radicale');
+    expect(serialized).not.toContain('DAYFRONT_CALDAV_PASSWORD');
     expect(body.data).toHaveProperty('ui');
     expect(body.data).toHaveProperty('calendar');
   });

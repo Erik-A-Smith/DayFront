@@ -8,8 +8,6 @@ const redactPaths = [
   'password',
   'caldav.password',
   'config.caldav.password',
-  'radicale.password',
-  'config.radicale.password',
   'req.headers.authorization',
   'request.headers.authorization',
   'headers.authorization',

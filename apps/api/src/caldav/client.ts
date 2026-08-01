@@ -202,7 +202,7 @@ export class CalDavClient {
       method: 'DELETE',
       headers: { 'If-Match': etag },
     });
-    // RFC 4918 commonly uses 204 for DELETE, while Radicale deployments and
+    // RFC 4918 commonly uses 204 for DELETE, while some deployments and
     // intermediaries may return another successful 2xx response.
     if (!response.ok) this.expectStatus(response, []);
   }

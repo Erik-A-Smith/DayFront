@@ -17,7 +17,7 @@ describe('logger redaction', () => {
 
     logger.info(
       {
-        radicale: { username: 'dayfront', password: 'calendar-secret' },
+        caldav: { username: 'dayfront', password: 'calendar-secret' },
         req: { headers: { authorization: 'Basic private-token' } },
       },
       'configuration loaded',

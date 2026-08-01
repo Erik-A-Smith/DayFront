@@ -4,7 +4,7 @@ import { mapTaskResource } from '../src/calendar/task-mapper.js';
 
 function taskResource(calendarData: string) {
   return {
-    url: 'http://radicale.test/calendars/personal/task.ics',
+    url: 'http://caldav.test/calendars/personal/task.ics',
     etag: '"task-v1"',
     calendarData,
   };

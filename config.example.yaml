@@ -1,5 +1,5 @@
 caldav:
-  url: http://radicale:5232
+  url: http://caldav.test:5232
   username: dayfront
   password: change-me
   timeoutMs: 10000
