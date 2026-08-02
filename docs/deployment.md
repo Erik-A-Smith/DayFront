@@ -51,10 +51,12 @@ is not written to the configured CalDAV server, a database, or browser storage. 
 
 ## Unraid
 
-1. Create `/mnt/user/appdata/dayfront/config.yaml` from `config.example.yaml`.
-2. Add the template from `unraid/dayfront.xml`, confirm the read-only configuration-directory path and port, and start the container.
+1. Add the template from `unraid/dayfront.xml` and enter the required CalDAV URL, username, and masked password.
+2. Confirm the port and timezone settings, then start the container.
 3. Unraid downloads the public `ghcr.io/erik-a-smith/dayfront:latest` image; no local source checkout or image build is required.
 4. Open the WebUI link and verify `/health`.
+
+The required template fields are sufficient to start DayFront without a YAML file. For advanced settings and external calendar subscriptions, create `/mnt/user/appdata/dayfront/config.yaml` from `config.example.yaml` and keep the optional read-only `/config` mapping. Environment values entered in the Unraid form take precedence over equivalent YAML values. Structured `calendar_subscriptions` remain YAML-only.
 
 The checked-in template tracks the latest stable versioned release. The separate `ghcr.io/erik-a-smith/dayfront:beta` image tracks `main` for pre-release testing.
 
