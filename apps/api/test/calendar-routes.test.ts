@@ -19,7 +19,11 @@ import { loadConfig } from '../src/config.js';
 import { createLogger } from '../src/logger.js';
 
 const fixtures = resolve(import.meta.dirname, '../../../tests/fixtures/caldav');
-const fixture = (name: string) => readFileSync(resolve(fixtures, name), 'utf8');
+const fixture = (name: string) =>
+  readFileSync(
+    resolve(fixtures, name.endsWith('.xml') ? `${name}.fixture` : name),
+    'utf8',
+  );
 const response = (name: string) => new Response(fixture(name), { status: 207 });
 const config = loadConfig({
   environment: {

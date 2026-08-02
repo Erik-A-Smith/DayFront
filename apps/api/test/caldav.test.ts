@@ -10,7 +10,11 @@ import {
 } from '../src/caldav/index.js';
 
 const fixtures = resolve(import.meta.dirname, '../../../tests/fixtures/caldav');
-const fixture = (name: string) => readFileSync(resolve(fixtures, name), 'utf8');
+const fixture = (name: string) =>
+  readFileSync(
+    resolve(fixtures, name.endsWith('.xml') ? `${name}.fixture` : name),
+    'utf8',
+  );
 
 const config = {
   url: 'http://caldav.test:5232',
