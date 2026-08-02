@@ -62,7 +62,13 @@ pnpm verify
 
 ## Container deployment
 
-Copy `config.example.yaml` to `config.yaml`, configure the CalDAV connection, then run:
+The public beta image is available for AMD64 and ARM64 hosts:
+
+```sh
+docker pull ghcr.io/erik-a-smith/dayfront:beta
+```
+
+Alternatively, copy `config.example.yaml` to `config.yaml`, configure the CalDAV connection, and build locally:
 
 ```sh
 docker compose up -d --build dayfront

@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<CommunityApplications>
+  <Profile>DayFront is the open-source CalDAV frontend. This repository contains the maintained DayFront container template for calendars, tasks, and read-only external iCalendar subscriptions. Visit the project page for documentation or GitHub Issues for support.</Profile>
+  <Icon>https://raw.githubusercontent.com/Erik-A-Smith/DayFront/main/apps/web/public/dayfront-logo-tile.png</Icon>
+  <WebPage>https://github.com/Erik-A-Smith/DayFront</WebPage>
+  <Forum>https://github.com/Erik-A-Smith/DayFront/issues</Forum>
+</CommunityApplications>

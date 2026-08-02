@@ -1,26 +1,33 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>DayFront</Name>
-  <Repository>dayfront:local</Repository>
-  <Registry/>
+  <Repository>ghcr.io/erik-a-smith/dayfront:beta</Repository>
+  <Registry>https://github.com/Erik-A-Smith/DayFront/pkgs/container/dayfront</Registry>
   <Network>bridge</Network>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
-  <Support/>
-  <Project/>
-  <Overview>Modern self-hosted calendar and task interface for an existing CalDAV server. DayFront has no built-in user login; expose it only through a trusted network or authenticating reverse proxy.</Overview>
+  <Support>https://github.com/Erik-A-Smith/DayFront/issues</Support>
+  <Project>https://github.com/Erik-A-Smith/DayFront</Project>
+  <TemplateURL>https://raw.githubusercontent.com/Erik-A-Smith/DayFront/main/unraid/dayfront.xml</TemplateURL>
+  <ReadMe>https://raw.githubusercontent.com/Erik-A-Smith/DayFront/main/README.md</ReadMe>
+  <Overview>DayFront is the open-source CalDAV frontend for calendars and tasks. Connect it to an existing standards-compliant CalDAV server and keep ownership of your data. DayFront has no built-in user login; expose it only through a trusted network or authenticating reverse proxy.</Overview>
   <Category>Productivity:</Category>
+  <ExtraSearchTerms>calendar caldav tasks todo ics self-hosted</ExtraSearchTerms>
   <Icon>https://raw.githubusercontent.com/Erik-A-Smith/DayFront/main/apps/web/public/dayfront-logo-tile.png</Icon>
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
+  <Screenshot>https://raw.githubusercontent.com/Erik-A-Smith/DayFront/main/docs/images/dayfront-calendar.png</Screenshot>
+  <Beta>true</Beta>
+  <Date>2026-08-01</Date>
+  <License>MIT</License>
   <ExtraParams>--security-opt no-new-privileges=true</ExtraParams>
   <PostArgs/>
   <CPUset/>
   <DateInstalled>0</DateInstalled>
   <DonateText/>
   <DonateLink/>
-  <Requires>Build or load the dayfront:local image before installing this development template. A published repository will replace this value at release time.</Requires>
+  <Requires>An accessible CalDAV server. Create /mnt/user/appdata/dayfront/config.yaml from the documented example and enter your server URL and credentials before starting the container.</Requires>
   <Config Name="Web UI Port" Target="8080" Default="8080" Mode="tcp" Description="DayFront HTTP port. Put this behind HTTPS and authentication when exposed outside a trusted LAN." Type="Port" Display="always" Required="true" Mask="false">8080</Config>
-  <Config Name="Configuration File" Target="/config/config.yaml" Default="/mnt/user/appdata/dayfront/config.yaml" Mode="ro" Description="Read-only DayFront YAML configuration containing the CalDAV connection settings." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/dayfront/config.yaml</Config>
+  <Config Name="Configuration Directory" Target="/config" Default="/mnt/user/appdata/dayfront" Mode="ro" Description="Directory containing config.yaml with the CalDAV connection settings. Mounted read-only because DayFront never modifies it." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/dayfront</Config>
   <Config Name="Container Timezone" Target="TZ" Default="UTC" Mode="" Description="System timezone used for container logs and runtime behavior, for example UTC or America/Toronto." Type="Variable" Display="always" Required="true" Mask="false">UTC</Config>
   <Config Name="Calendar Display Timezone" Target="DAYFRONT_CALENDAR_TIMEZONE" Default="local" Mode="" Description="Timezone used to display and interpret calendar values. Use local for each browser's timezone, UTC, or an IANA name such as America/Toronto." Type="Variable" Display="always" Required="true" Mask="false">local</Config>
   <Config Name="Trust Reverse Proxy" Target="DAYFRONT_SERVER_TRUST_PROXY" Default="false" Mode="" Description="Set true only when DayFront is directly behind a trusted proxy that overwrites forwarded headers." Type="Variable" Display="advanced" Required="true" Mask="false">false</Config>
