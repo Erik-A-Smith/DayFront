@@ -17,7 +17,7 @@ DayFront is a modern, self-hosted web interface for calendars and tasks stored o
 
 DayFront uses standard CalDAV and WebDAV discovery and connects to standards-compliant CalDAV servers through the `caldav` configuration.
 
-> **Status:** Pre-release. The core calendar and task workflows are functional, but the project is undergoing V1 testing, documentation, security scanning, and deployment validation.
+> **Status:** DayFront 1.0 is stable and ready for self-hosted deployment. Compatibility reports for different CalDAV servers are welcome.
 
 ## Features
 
@@ -62,10 +62,10 @@ pnpm verify
 
 ## Container deployment
 
-The public beta image is available for AMD64 and ARM64 hosts:
+The stable image is available for AMD64 and ARM64 hosts:
 
 ```sh
-docker pull ghcr.io/erik-a-smith/dayfront:beta
+docker pull ghcr.io/erik-a-smith/dayfront:latest
 ```
 
 Alternatively, copy `config.example.yaml` to `config.yaml`, configure the CalDAV connection, and build locally:

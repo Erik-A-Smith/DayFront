@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>DayFront</Name>
-  <Repository>ghcr.io/erik-a-smith/dayfront:beta</Repository>
+  <Repository>ghcr.io/erik-a-smith/dayfront:latest</Repository>
   <Registry>https://github.com/Erik-A-Smith/DayFront/pkgs/container/dayfront</Registry>
   <Network>bridge</Network>
   <Shell>sh</Shell>
@@ -16,8 +16,9 @@
   <Icon>https://raw.githubusercontent.com/Erik-A-Smith/DayFront/main/apps/web/public/dayfront-logo-tile.png</Icon>
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
   <Screenshot>https://raw.githubusercontent.com/Erik-A-Smith/DayFront/main/docs/images/dayfront-calendar.png</Screenshot>
-  <Beta>true</Beta>
   <Date>2026-08-01</Date>
+  <Changes>DayFront 1.0.0 stable release.</Changes>
+  <DefaultTagDescription>Stable releases</DefaultTagDescription>
   <License>MIT</License>
   <ExtraParams>--security-opt no-new-privileges=true</ExtraParams>
   <PostArgs/>

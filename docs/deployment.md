@@ -53,10 +53,10 @@ is not written to the configured CalDAV server, a database, or browser storage. 
 
 1. Create `/mnt/user/appdata/dayfront/config.yaml` from `config.example.yaml`.
 2. Add the template from `unraid/dayfront.xml`, confirm the read-only configuration-directory path and port, and start the container.
-3. Unraid downloads the public `ghcr.io/erik-a-smith/dayfront:beta` image; no local source checkout or image build is required.
+3. Unraid downloads the public `ghcr.io/erik-a-smith/dayfront:latest` image; no local source checkout or image build is required.
 4. Open the WebUI link and verify `/health`.
 
-The checked-in template is marked Beta and tracks the image built from `main`. Stable Community Applications releases will use `ghcr.io/erik-a-smith/dayfront:latest` after the first versioned release.
+The checked-in template tracks the latest stable versioned release. The separate `ghcr.io/erik-a-smith/dayfront:beta` image tracks `main` for pre-release testing.
 
 ## Reverse proxy
 
