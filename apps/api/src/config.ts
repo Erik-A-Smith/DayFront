@@ -284,7 +284,7 @@ export function loadConfig(options: LoadConfigOptions = {}): DayFrontConfig {
   const parsedSubscriptions = subscriptions(yaml.calendar_subscriptions);
   delete yaml.calendar_subscriptions;
   const candidate = merge(
-    merge(defaults as unknown as ConfigRecord, yaml),
+    merge(defaults, yaml),
     environmentConfig(environment),
   );
   candidate.calendarSubscriptions = parsedSubscriptions.data;

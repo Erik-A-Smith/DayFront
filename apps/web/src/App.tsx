@@ -470,7 +470,9 @@ export function App() {
 
   useEffect(() => {
     const controller = new AbortController();
-    setLoadingTasks(true);
+    queueMicrotask(() => {
+      if (!controller.signal.aborted) setLoadingTasks(true);
+    });
     void getTaskList([...selected], controller.signal)
       .then(setTasks)
       .catch((reason: unknown) => {

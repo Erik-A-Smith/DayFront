@@ -114,13 +114,12 @@ export function mapCalendarResource(
       while ((occurrence = iterator.next())) {
         if (occurrence.toJSDate() >= range.end) break;
         if (occurrence.toJSDate() < range.start) continue;
-        // The ical.js declaration exposes occurrence details as `any`.
-        const details = event.getOccurrenceDetails(occurrence) as {
+        const details: {
           item: ICAL.Event;
           recurrenceId: ICAL.Time;
           startDate: ICAL.Time;
           endDate: ICAL.Time;
-        };
+        } = event.getOccurrenceDetails(occurrence);
         if (
           !isCancelled(details.item) &&
           intersects(details.startDate, details.endDate, range)
