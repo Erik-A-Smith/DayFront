@@ -21,6 +21,82 @@ describe('DayFront calendar', () => {
     window.history.replaceState(null, '', '/');
   });
 
+  it('prompts for CalDAV credentials in multi-user mode and signs in', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const url =
+        typeof input === 'string'
+          ? input
+          : input instanceof URL
+            ? input.href
+            : input.url;
+      const data = url.endsWith('/config')
+        ? {
+            authentication: { mode: 'caldav-login' },
+            ui: {
+              defaultView: 'month',
+              darkMode: 'auto',
+              sidebar: {
+                enabled: true,
+                defaultOpen: true,
+                showBrand: true,
+                showTasks: true,
+                showCalendars: true,
+              },
+            },
+            calendar: {
+              timezone: 'local',
+              weekStartsOn: 'locale',
+              maxOccurrences: 5000,
+            },
+          }
+        : url.endsWith('/auth/session')
+          ? { mode: 'caldav-login', authenticated: false }
+          : url.endsWith('/auth/login')
+            ? {
+                mode: 'caldav-login',
+                authenticated: true,
+                username: 'alice',
+              }
+            : [];
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({ data, meta: { requestId: 'auth-request' } }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        ),
+      );
+    });
+
+    render(<App />);
+    expect(
+      await screen.findByRole('heading', { name: 'Sign in to DayFront' }),
+    ).toBeVisible();
+    fireEvent.change(screen.getByLabelText('Username'), {
+      target: { value: 'alice' },
+    });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'secret' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    await screen.findByRole('button', { name: 'Sign out' });
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      '/api/v1/auth/login',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ username: 'alice', password: 'secret' }),
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Hide sidebar' }));
+    const signOut = screen.getByRole('button', { name: 'Sign out' });
+    const toolbarButtons = Array.from(
+      signOut.closest('.fc-toolbar-chunk')?.querySelectorAll('button') ?? [],
+    );
+    expect(toolbarButtons.at(-1)).toBe(signOut);
+    fireEvent.click(signOut);
+    expect(
+      await screen.findByRole('heading', { name: 'Sign in to DayFront' }),
+    ).toBeVisible();
+  });
+
   it('renders task start-to-due durations with an inclusive all-day due date', () => {
     expect(
       taskCalendarRange({
@@ -80,7 +156,10 @@ describe('DayFront calendar', () => {
     });
 
     render(<App />);
-    await waitFor(() => expect(document.querySelector('#sidebar')).toBeNull());
+    await waitFor(() => {
+      expect(screen.queryByText('Loading DayFront…')).not.toBeInTheDocument();
+      expect(document.querySelector('#sidebar')).toBeNull();
+    });
     expect(
       screen.queryByRole('button', { name: 'Hide sidebar' }),
     ).not.toBeInTheDocument();
@@ -132,6 +211,9 @@ describe('DayFront calendar', () => {
       ).toBeVisible(),
     );
     expect(document.querySelector('#sidebar')).not.toBeVisible();
+    expect(getComputedStyle(document.querySelector('#sidebar')!).display).toBe(
+      'none',
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Show sidebar' }));
     expect(document.querySelector('#sidebar')).toBeVisible();
   });
@@ -342,7 +424,7 @@ describe('DayFront calendar', () => {
     render(<App />);
 
     expect(
-      screen.getByRole('heading', { name: 'DayFront' }),
+      await screen.findByRole('heading', { name: 'DayFront' }),
     ).toBeInTheDocument();
     expect(await screen.findByText('Personal')).toBeInTheDocument();
     await waitFor(() =>

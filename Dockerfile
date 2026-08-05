@@ -32,7 +32,7 @@ COPY --from=production-dependencies /workspace/node_modules ./node_modules
 COPY --from=production-dependencies /workspace/apps/api/node_modules ./apps/api/node_modules
 COPY --from=build /workspace/apps/api/dist ./apps/api/dist
 COPY --from=build /workspace/apps/web/dist ./web
-RUN mkdir -p /config && chown -R node:node /app /config
+RUN mkdir -p /config /data && chown -R node:node /app /config /data
 USER node
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

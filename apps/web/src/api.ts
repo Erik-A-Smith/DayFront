@@ -16,9 +16,32 @@ import {
   type HealthResponse,
 } from '@dayfront/shared';
 
+export const authenticationRequiredEvent = 'dayfront:authentication-required';
+
+function errorCode(body: unknown): string | undefined {
+  if (
+    typeof body !== 'object' ||
+    body === null ||
+    !('error' in body) ||
+    typeof body.error !== 'object' ||
+    body.error === null ||
+    !('code' in body.error) ||
+    typeof body.error.code !== 'string'
+  )
+    return undefined;
+  return body.error.code;
+}
+
 async function json(response: Response): Promise<unknown> {
   const body: unknown = await response.json();
   if (!response.ok) {
+    if (
+      response.status === 401 &&
+      ['AUTHENTICATION_REQUIRED', 'AUTHENTICATION_FAILED'].includes(
+        errorCode(body) ?? '',
+      )
+    )
+      window.dispatchEvent(new Event(authenticationRequiredEvent));
     const message =
       typeof body === 'object' && body !== null && 'error' in body
         ? JSON.stringify(body)
@@ -26,6 +49,45 @@ async function json(response: Response): Promise<unknown> {
     throw new Error(message);
   }
   return body;
+}
+
+export interface AuthSession {
+  mode: 'single-user' | 'caldav-login';
+  authenticated: boolean;
+  username?: string;
+}
+
+export async function getAuthSession(): Promise<AuthSession> {
+  const response = await fetch('/api/v1/auth/session', {
+    credentials: 'same-origin',
+    cache: 'no-store',
+  });
+  const body = (await json(response)) as { data?: AuthSession };
+  if (!body.data) throw new Error('Invalid authentication response.');
+  return body.data;
+}
+
+export async function login(
+  username: string,
+  password: string,
+): Promise<AuthSession> {
+  const response = await fetch('/api/v1/auth/login', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  });
+  const body = (await json(response)) as { data?: AuthSession };
+  if (!body.data) throw new Error('Invalid authentication response.');
+  return { ...body.data, mode: 'caldav-login' };
+}
+
+export async function logout(): Promise<void> {
+  const response = await fetch('/api/v1/auth/logout', {
+    method: 'POST',
+    credentials: 'same-origin',
+  });
+  if (!response.ok) await json(response);
 }
 
 export async function getHealth(signal?: AbortSignal): Promise<HealthResponse> {

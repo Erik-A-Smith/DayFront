@@ -9,6 +9,7 @@ import express, {
 } from 'express';
 import type { Logger } from 'pino';
 
+import { createAuthentication } from './auth.js';
 import { getPublicConfig, type DayFrontConfig } from './config.js';
 import { CalDavClient } from './caldav/client.js';
 import { calendarRouter } from './calendar/routes.js';
@@ -26,6 +27,7 @@ export interface AppDependencies {
   caldav?: CalDavClient;
   webRoot?: string;
   subscriptionFetch?: typeof fetch;
+  caldavFetch?: typeof fetch;
 }
 
 export function createApp({
@@ -34,6 +36,7 @@ export function createApp({
   caldav,
   webRoot,
   subscriptionFetch,
+  caldavFetch,
 }: AppDependencies) {
   const app = express();
 
@@ -64,6 +67,12 @@ export function createApp({
       next();
     },
   );
+
+  const authentication = createAuthentication(
+    config,
+    caldavFetch ? { fetch: caldavFetch } : {},
+  );
+  app.use(authentication.session);
 
   app.get(
     '/health',
@@ -97,17 +106,38 @@ export function createApp({
   );
 
   app.get('/api/v1/config', (_request, response) => {
+    response.setHeader('Cache-Control', 'no-store');
     response.json({
       data: getPublicConfig(config),
       meta: { requestId: String(response.locals.requestId) },
     });
   });
 
+  app.get('/api/v1/auth/session', authentication.status);
+  app.post(
+    '/api/v1/auth/login',
+    authentication.requireSameOrigin,
+    authentication.login,
+  );
+  app.post(
+    '/api/v1/auth/logout',
+    authentication.requireSameOrigin,
+    authentication.logout,
+  );
+
   app.use(
     '/api/v1',
+    (_request, response, next) => {
+      response.setHeader('Cache-Control', 'no-store');
+      next();
+    },
+    authentication.requireSession,
+    authentication.requireSameOrigin,
     mutationRateLimit(),
     calendarRouter(
-      caldav ?? new CalDavClient(config.caldav),
+      config.authentication.mode === 'caldav-login'
+        ? (request) => authentication.client(request)
+        : (caldav ?? new CalDavClient(config.caldav)),
       config.calendar.maxOccurrences,
       new CalendarSubscriptionService(
         config.calendarSubscriptions,

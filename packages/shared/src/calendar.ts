@@ -217,6 +217,9 @@ export const calendarEventResponseSchema = z.object({
 
 export const publicConfigSchema = z.object({
   data: z.object({
+    authentication: z
+      .object({ mode: z.enum(['single-user', 'caldav-login']) })
+      .default({ mode: 'single-user' }),
     ui: z.object({
       defaultView: z.enum(['month', 'week', 'day', 'agenda']),
       darkMode: z.enum(['auto', 'light', 'dark']),

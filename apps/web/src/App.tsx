@@ -24,6 +24,7 @@ import {
 } from '@dayfront/shared';
 
 import {
+  authenticationRequiredEvent,
   createEvent,
   createCalendar,
   createTask,
@@ -31,10 +32,13 @@ import {
   deleteCalendar,
   deleteTask,
   getCalendars,
+  getAuthSession,
   getEvents,
   getPublicConfig,
   getTaskList,
   getTasks,
+  login,
+  logout,
   updateEvent,
   updateCalendar,
   updateTask,
@@ -43,6 +47,7 @@ import { EventDialog } from './EventDialog.js';
 import { CalendarManager } from './CalendarManager.js';
 import { taskCalendarRange } from './calendar-display.js';
 import { TaskDialog } from './TaskDialog.js';
+import { LoginPage } from './LoginPage.js';
 
 const entrySymbols = {
   event: { symbol: '◆', label: 'Event' },
@@ -384,7 +389,13 @@ function EntryTypeDialog({
   );
 }
 
-export function App() {
+function CalendarApp({
+  username,
+  onLogout,
+}: {
+  username?: string;
+  onLogout?: () => void;
+}) {
   const calendarRef = useRef<FullCalendar>(null);
   const wheelDistance = useRef(0);
   const wheelReset = useRef<ReturnType<typeof setTimeout> | undefined>(
@@ -1124,6 +1135,14 @@ export function App() {
               )}
             </details>
           )}
+          {onLogout && (
+            <div className="account-menu">
+              <span title={username}>{username}</span>
+              <button type="button" onClick={onLogout}>
+                Sign out
+              </button>
+            </div>
+          )}
         </aside>
       )}
 
@@ -1155,13 +1174,18 @@ export function App() {
               hint: sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar',
               click: () => setSidebarOpen((open) => !open),
             },
+            signOut: {
+              text: '',
+              hint: 'Sign out',
+              click: () => onLogout?.(),
+            },
           }}
           headerToolbar={{
             left: sidebarSettings.enabled
               ? 'sidebarToggle prev,next today'
               : 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth',
+            right: `dayGridMonth,timeGridWeek,timeGridDay,listMonth${onLogout && !sidebarVisible ? ' signOut' : ''}`,
           }}
           buttonText={{
             month: 'Month',
@@ -1285,5 +1309,96 @@ export function App() {
         />
       )}
     </div>
+  );
+}
+
+export function App() {
+  const [auth, setAuth] = useState<{
+    loading: boolean;
+    mode?: 'single-user' | 'caldav-login';
+    authenticated?: boolean;
+    username?: string;
+  }>({ loading: true });
+  const authMode = useRef(auth.mode);
+
+  useEffect(() => {
+    authMode.current = auth.mode;
+  }, [auth.mode]);
+
+  useEffect(() => {
+    const requireAuthentication = () => {
+      if (authMode.current !== 'caldav-login') return;
+      setAuth({
+        loading: false,
+        mode: 'caldav-login',
+        authenticated: false,
+      });
+      void logout().catch(() => undefined);
+    };
+    window.addEventListener(authenticationRequiredEvent, requireAuthentication);
+    return () =>
+      window.removeEventListener(
+        authenticationRequiredEvent,
+        requireAuthentication,
+      );
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    void getPublicConfig()
+      .then(async (config) => {
+        if (config.authentication.mode === 'single-user') {
+          if (active)
+            setAuth({
+              loading: false,
+              mode: 'single-user',
+              authenticated: true,
+            });
+          return;
+        }
+        const session = await getAuthSession();
+        if (active) setAuth({ loading: false, ...session });
+      })
+      .catch(() => {
+        if (active)
+          setAuth({ loading: false, mode: 'single-user', authenticated: true });
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (auth.loading)
+    return (
+      <main className="login-shell">
+        <p className="muted">Loading DayFront…</p>
+      </main>
+    );
+  if (auth.mode === 'caldav-login' && !auth.authenticated)
+    return (
+      <LoginPage
+        onLogin={async (username, password) => {
+          const session = await login(username, password);
+          setAuth({ loading: false, ...session });
+        }}
+      />
+    );
+  return (
+    <CalendarApp
+      {...(auth.username ? { username: auth.username } : {})}
+      {...(auth.mode === 'caldav-login'
+        ? {
+            onLogout: () => {
+              void logout().finally(() =>
+                setAuth({
+                  loading: false,
+                  mode: 'caldav-login',
+                  authenticated: false,
+                }),
+              );
+            },
+          }
+        : {})}
+    />
   );
 }

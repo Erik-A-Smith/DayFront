@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { randomBytes } from 'node:crypto';
 
 import { parse as parseYaml } from 'yaml';
 import { z } from 'zod';
@@ -39,9 +40,15 @@ const configSchema = strictObject({
           message: 'Must use HTTP or HTTPS.',
         },
       ),
-    username: z.string().min(1),
-    password: z.string().min(1),
+    username: z.string().min(1).optional(),
+    password: z.string().min(1).optional(),
     timeoutMs: z.number().int().positive().max(120_000),
+  }),
+  authentication: strictObject({
+    mode: z.enum(['single-user', 'caldav-login']),
+    sessionSecret: z.string().min(32).optional(),
+    sessionSecretFile: z.string().min(1).optional(),
+    sessionTtlHours: z.number().int().min(1).max(8_760),
   }),
   server: strictObject({
     host: z.string().min(1),
@@ -73,13 +80,41 @@ const configSchema = strictObject({
     format: z.enum(['json', 'pretty']),
   }),
   calendarSubscriptions: z.array(subscriptionSchema),
+}).superRefine((config, context) => {
+  if (config.authentication.mode === 'single-user') {
+    if (!config.caldav.username)
+      context.addIssue({
+        code: 'custom',
+        path: ['caldav', 'username'],
+        message: 'Required in single-user authentication mode.',
+      });
+    if (!config.caldav.password)
+      context.addIssue({
+        code: 'custom',
+        path: ['caldav', 'password'],
+        message: 'Required in single-user authentication mode.',
+      });
+  }
+  if (
+    config.authentication.mode === 'caldav-login' &&
+    !config.authentication.sessionSecret
+  )
+    context.addIssue({
+      code: 'custom',
+      path: ['authentication', 'sessionSecret'],
+      message:
+        'Required in caldav-login mode and must contain at least 32 characters.',
+    });
 });
 
 export type DayFrontConfig = z.infer<typeof configSchema>;
-export type PublicConfig = Pick<DayFrontConfig, 'ui' | 'calendar'>;
+export type PublicConfig = Pick<DayFrontConfig, 'ui' | 'calendar'> & {
+  authentication: { mode: DayFrontConfig['authentication']['mode'] };
+};
 
 const defaults = {
   caldav: { timeoutMs: 10_000 },
+  authentication: { mode: 'single-user', sessionTtlHours: 24 * 30 },
   server: { host: '0.0.0.0', port: 8080, trustProxy: false },
   ui: {
     defaultView: 'month',
@@ -171,6 +206,10 @@ const envPaths = {
   DAYFRONT_CALDAV_USERNAME: ['caldav', 'username'],
   DAYFRONT_CALDAV_PASSWORD: ['caldav', 'password'],
   DAYFRONT_CALDAV_TIMEOUT_MS: ['caldav', 'timeoutMs'],
+  DAYFRONT_AUTH_MODE: ['authentication', 'mode'],
+  DAYFRONT_AUTH_SESSION_SECRET: ['authentication', 'sessionSecret'],
+  DAYFRONT_AUTH_SESSION_SECRET_FILE: ['authentication', 'sessionSecretFile'],
+  DAYFRONT_AUTH_SESSION_TTL_HOURS: ['authentication', 'sessionTtlHours'],
   DAYFRONT_SERVER_HOST: ['server', 'host'],
   DAYFRONT_SERVER_PORT: ['server', 'port'],
   DAYFRONT_SERVER_TRUST_PROXY: ['server', 'trustProxy'],
@@ -191,6 +230,7 @@ const envPaths = {
 
 const numericVariables = new Set([
   'DAYFRONT_CALDAV_TIMEOUT_MS',
+  'DAYFRONT_AUTH_SESSION_TTL_HOURS',
   'DAYFRONT_SERVER_PORT',
   'DAYFRONT_CALENDAR_MAX_OCCURRENCES',
 ]);
@@ -287,6 +327,17 @@ export function loadConfig(options: LoadConfigOptions = {}): DayFrontConfig {
     merge(defaults, yaml),
     environmentConfig(environment),
   );
+  const authentication = candidate.authentication;
+  if (
+    isRecord(authentication) &&
+    authentication.mode === 'caldav-login' &&
+    authentication.sessionSecret === undefined &&
+    typeof authentication.sessionSecretFile === 'string'
+  ) {
+    authentication.sessionSecret = sessionSecret(
+      authentication.sessionSecretFile,
+    );
+  }
   candidate.calendarSubscriptions = parsedSubscriptions.data;
   const result = configSchema.safeParse(candidate);
 
@@ -301,6 +352,38 @@ export function loadConfig(options: LoadConfigOptions = {}): DayFrontConfig {
   return result.data;
 }
 
+function sessionSecret(path: string): string {
+  try {
+    return readFileSync(path, 'utf8').trim();
+  } catch (error: unknown) {
+    if (!isMissingFile(error))
+      throw new ConfigurationError([
+        `Could not read authentication session secret file: ${path}`,
+      ]);
+  }
+
+  const generated = randomBytes(48).toString('base64url');
+  try {
+    writeFileSync(path, `${generated}\n`, {
+      encoding: 'utf8',
+      mode: 0o600,
+      flag: 'wx',
+    });
+    return generated;
+  } catch (error: unknown) {
+    if (isRecord(error) && error.code === 'EEXIST') {
+      try {
+        return readFileSync(path, 'utf8').trim();
+      } catch {
+        // Fall through to the actionable configuration error below.
+      }
+    }
+    throw new ConfigurationError([
+      `Could not create authentication session secret file: ${path}`,
+    ]);
+  }
+}
+
 export function getConfigurationWarnings(
   config: DayFrontConfig,
 ): readonly string[] {
@@ -308,5 +391,9 @@ export function getConfigurationWarnings(
 }
 
 export function getPublicConfig(config: DayFrontConfig): PublicConfig {
-  return { ui: config.ui, calendar: config.calendar };
+  return {
+    ui: config.ui,
+    calendar: config.calendar,
+    authentication: { mode: config.authentication.mode },
+  };
 }

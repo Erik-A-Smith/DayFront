@@ -24,11 +24,57 @@ function yamlFile(contents: string): string {
 }
 
 describe('configuration', () => {
+  it('requires shared credentials only in legacy mode and a secret in login mode', () => {
+    expect(() =>
+      loadConfig({
+        environment: { DAYFRONT_CALDAV_URL: 'https://calendar.example.test' },
+      }),
+    ).toThrow(ConfigurationError);
+    expect(() =>
+      loadConfig({
+        environment: {
+          DAYFRONT_CALDAV_URL: 'https://calendar.example.test',
+          DAYFRONT_AUTH_MODE: 'caldav-login',
+        },
+      }),
+    ).toThrow(ConfigurationError);
+    expect(
+      loadConfig({
+        environment: {
+          DAYFRONT_CALDAV_URL: 'https://calendar.example.test',
+          DAYFRONT_AUTH_MODE: 'caldav-login',
+          DAYFRONT_AUTH_SESSION_SECRET:
+            'a-unique-secret-with-at-least-32-characters',
+        },
+      }).caldav.username,
+    ).toBeUndefined();
+  });
+
+  it('generates and reuses a persistent login session secret', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'dayfront-session-'));
+    const secretFile = join(directory, 'session-secret');
+    const environment = {
+      DAYFRONT_CALDAV_URL: 'https://calendar.example.test',
+      DAYFRONT_AUTH_MODE: 'caldav-login',
+      DAYFRONT_AUTH_SESSION_SECRET_FILE: secretFile,
+    };
+
+    const first = loadConfig({ environment });
+    const second = loadConfig({ environment });
+
+    expect(first.authentication.sessionSecret).toHaveLength(64);
+    expect(second.authentication.sessionSecret).toBe(
+      first.authentication.sessionSecret,
+    );
+    expect(first.authentication.sessionSecret).not.toContain('change-me');
+  });
+
   it('applies documented defaults', () => {
     const config = loadConfig({ environment: requiredEnvironment });
 
     expect(config).toMatchObject({
       caldav: { timeoutMs: 10_000 },
+      authentication: { mode: 'single-user', sessionTtlHours: 720 },
       server: { host: '0.0.0.0', port: 8080, trustProxy: false },
       ui: {
         defaultView: 'month',
@@ -164,6 +210,8 @@ server:
         DAYFRONT_CALDAV_USERNAME: 'env-user',
         DAYFRONT_CALDAV_PASSWORD: 'env-secret',
         DAYFRONT_CALDAV_TIMEOUT_MS: '12345',
+        DAYFRONT_AUTH_MODE: 'single-user',
+        DAYFRONT_AUTH_SESSION_TTL_HOURS: '168',
         DAYFRONT_SERVER_HOST: '127.0.0.1',
         DAYFRONT_SERVER_PORT: '9091',
         DAYFRONT_SERVER_TRUST_PROXY: 'true',
@@ -190,6 +238,7 @@ server:
         password: 'env-secret',
         timeoutMs: 12_345,
       },
+      authentication: { mode: 'single-user', sessionTtlHours: 168 },
       server: { host: '127.0.0.1', port: 9091, trustProxy: true },
       ui: {
         defaultView: 'agenda',

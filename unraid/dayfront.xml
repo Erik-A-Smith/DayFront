@@ -10,14 +10,14 @@
   <Project>https://github.com/Erik-A-Smith/DayFront</Project>
   <TemplateURL>https://raw.githubusercontent.com/Erik-A-Smith/DayFront/main/unraid/dayfront.xml</TemplateURL>
   <ReadMe>https://raw.githubusercontent.com/Erik-A-Smith/DayFront/main/README.md</ReadMe>
-  <Overview>DayFront is the open-source CalDAV frontend for calendars and tasks. Connect it to an existing standards-compliant CalDAV server and keep ownership of your data. DayFront has no built-in user login; expose it only through a trusted network or authenticating reverse proxy.</Overview>
+  <Overview>DayFront is the open-source CalDAV frontend for calendars and tasks. Connect it to an existing standards-compliant CalDAV server and keep ownership of your data. New installations use individual CalDAV user login; existing legacy single-account installations remain supported.</Overview>
   <Category>Productivity:</Category>
   <ExtraSearchTerms>calendar caldav tasks todo ics self-hosted</ExtraSearchTerms>
   <Icon>https://raw.githubusercontent.com/Erik-A-Smith/DayFront/main/apps/web/public/dayfront-logo-tile.png</Icon>
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
   <Screenshot>https://raw.githubusercontent.com/Erik-A-Smith/DayFront/main/docs/images/dayfront-calendar.png</Screenshot>
-  <Date>2026-08-01</Date>
-  <Changes>DayFront 1.0.0 stable release.</Changes>
+  <Date>2026-08-04</Date>
+  <Changes>Add multi-user CalDAV login while preserving single-user mode for existing installations.</Changes>
   <DefaultTagDescription>Stable releases</DefaultTagDescription>
   <License>MIT</License>
   <ExtraParams>--security-opt no-new-privileges=true</ExtraParams>
@@ -26,13 +26,15 @@
   <DateInstalled>0</DateInstalled>
   <DonateText/>
   <DonateLink/>
-  <Requires>An accessible CalDAV server. Enter its URL and credentials in the required template fields. Advanced settings and external calendar subscriptions can optionally be added in /mnt/user/appdata/dayfront/config.yaml.</Requires>
+  <Requires>An accessible CalDAV server. New installations only need its URL; DayFront generates and persists a unique login-session secret automatically. Existing legacy installations retain their locally saved shared-account settings. Advanced settings and external calendar subscriptions can optionally be added in /mnt/user/appdata/dayfront/config.yaml.</Requires>
   <Config Name="Web UI Port" Target="8080" Default="8080" Mode="tcp" Description="DayFront HTTP port. Put this behind HTTPS and authentication when exposed outside a trusted LAN." Type="Port" Display="always" Required="true" Mask="false">8080</Config>
   <Config Name="CalDAV Server URL" Target="DAYFRONT_CALDAV_URL" Default="" Mode="" Description="Full HTTP or HTTPS URL of the CalDAV server. This environment value overrides caldav.url in config.yaml." Type="Variable" Display="always" Required="true" Mask="false"></Config>
-  <Config Name="CalDAV Username" Target="DAYFRONT_CALDAV_USERNAME" Default="" Mode="" Description="Username used to authenticate with the CalDAV server. This environment value overrides caldav.username in config.yaml." Type="Variable" Display="always" Required="true" Mask="false"></Config>
-  <Config Name="CalDAV Password" Target="DAYFRONT_CALDAV_PASSWORD" Default="" Mode="" Description="Password or application token used to authenticate with the CalDAV server. Stored in the local Unraid Docker template and hidden in the form. This environment value overrides caldav.password in config.yaml." Type="Variable" Display="always" Required="true" Mask="true"></Config>
+  <Config Name="Authentication Mode" Target="DAYFRONT_AUTH_MODE" Default="caldav-login" Mode="" Description="Prompts each user for their own CalDAV credentials. Existing installations without this setting continue using legacy single-user mode." Type="Variable" Display="always" Required="true" Mask="false">caldav-login</Config>
+  <Config Name="Session Secret File" Target="DAYFRONT_AUTH_SESSION_SECRET_FILE" Default="/data/session-secret" Mode="" Description="File where DayFront generates and retains its encrypted-login session key. Change only when using a custom data mapping." Type="Variable" Display="advanced" Required="true" Mask="false">/data/session-secret</Config>
+  <Config Name="Session Lifetime" Target="DAYFRONT_AUTH_SESSION_TTL_HOURS" Default="720" Mode="" Description="Maximum CalDAV login session lifetime in hours. The default is 720 hours (30 days)." Type="Variable" Display="advanced" Required="true" Mask="false">720</Config>
   <Config Name="Container Timezone" Target="TZ" Default="UTC" Mode="" Description="System timezone used for container logs and runtime behavior, for example UTC or America/Toronto." Type="Variable" Display="always" Required="true" Mask="false">UTC</Config>
   <Config Name="Calendar Display Timezone" Target="DAYFRONT_CALENDAR_TIMEZONE" Default="local" Mode="" Description="Timezone used to display and interpret calendar values. Use local for each browser's timezone, UTC, or an IANA name such as America/Toronto." Type="Variable" Display="always" Required="true" Mask="false">local</Config>
   <Config Name="Trust Reverse Proxy" Target="DAYFRONT_SERVER_TRUST_PROXY" Default="false" Mode="" Description="Set true only when DayFront is directly behind a trusted proxy that overwrites forwarded headers." Type="Variable" Display="advanced" Required="true" Mask="false">false</Config>
+  <Config Name="Persistent Session Data" Target="/data" Default="/mnt/user/appdata/dayfront/session" Mode="rw" Description="Stores the automatically generated session secret so users remain signed in across container updates and restarts." Type="Path" Display="advanced" Required="true" Mask="false">/mnt/user/appdata/dayfront/session</Config>
   <Config Name="Advanced Configuration Directory" Target="/config" Default="/mnt/user/appdata/dayfront" Mode="ro" Description="Optional directory containing config.yaml for advanced settings and external calendar subscriptions. Environment fields above take precedence. Mounted read-only because DayFront never modifies it." Type="Path" Display="advanced" Required="false" Mask="false">/mnt/user/appdata/dayfront</Config>
 </Container>
