@@ -79,6 +79,7 @@ describe('configuration', () => {
       ui: {
         defaultView: 'month',
         darkMode: 'auto',
+        timeFormat: '12h',
         sidebar: {
           enabled: true,
           defaultOpen: true,
@@ -161,6 +162,7 @@ server:
   port: 9090
 ui:
   darkMode: dark
+  timeFormat: 24h
   sidebar:
     defaultOpen: false
     showBrand: false
@@ -172,6 +174,7 @@ ui:
     expect(config.caldav.username).toBe('yaml-user');
     expect(config.server.port).toBe(9090);
     expect(config.ui.darkMode).toBe('dark');
+    expect(config.ui.timeFormat).toBe('24h');
     expect(config.ui.sidebar).toMatchObject({
       enabled: true,
       defaultOpen: false,
@@ -217,6 +220,7 @@ server:
         DAYFRONT_SERVER_TRUST_PROXY: 'true',
         DAYFRONT_UI_DEFAULT_VIEW: 'agenda',
         DAYFRONT_UI_DARK_MODE: 'dark',
+        DAYFRONT_UI_TIME_FORMAT: '24h',
         DAYFRONT_UI_DEFAULT_CALENDAR: 'primary',
         DAYFRONT_UI_SIDEBAR_ENABLED: 'false',
         DAYFRONT_UI_SIDEBAR_DEFAULT_OPEN: 'false',
@@ -243,6 +247,7 @@ server:
       ui: {
         defaultView: 'agenda',
         darkMode: 'dark',
+        timeFormat: '24h',
         defaultCalendar: 'primary',
         sidebar: {
           enabled: false,

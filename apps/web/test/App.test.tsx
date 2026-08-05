@@ -11,6 +11,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../src/App.js';
 import { taskCalendarRange } from '../src/calendar-display.js';
 import { CalendarManager } from '../src/CalendarManager.js';
+import { ClockInput } from '../src/ClockInput.js';
 import { EventDialog } from '../src/EventDialog.js';
 import { TaskDialog } from '../src/TaskDialog.js';
 
@@ -19,6 +20,35 @@ describe('DayFront calendar', () => {
     cleanup();
     vi.restoreAllMocks();
     window.history.replaceState(null, '', '/');
+  });
+
+  it('formats and selects time using a 24-hour clock', () => {
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <ClockInput label="Start time" value="17:05" onChange={onChange} />,
+    );
+    expect(
+      screen.getByRole('button', { name: 'Start time' }),
+    ).toHaveTextContent('5:05 PM');
+
+    rerender(
+      <ClockInput
+        label="Start time"
+        value="17:05"
+        timeFormat="24h"
+        onChange={onChange}
+      />,
+    );
+    expect(
+      screen.getByRole('button', { name: 'Start time' }),
+    ).toHaveTextContent('17:05');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start time' }));
+    fireEvent.click(screen.getByRole('button', { name: '23' }));
+    fireEvent.click(screen.getByRole('button', { name: '30' }));
+
+    expect(onChange).toHaveBeenCalledWith('23:30');
+    expect(screen.queryByText('Choose AM or PM')).not.toBeInTheDocument();
   });
 
   it('prompts for CalDAV credentials in multi-user mode and signs in', async () => {

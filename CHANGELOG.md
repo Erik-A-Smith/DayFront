@@ -4,6 +4,9 @@ All notable changes to DayFront are documented here.
 
 ## Unreleased
 
+- Add configurable 12-hour or 24-hour time display across calendar views and event/task time pickers
+- Expose the time-format setting through YAML, environment variables, and the stable and beta Unraid templates
+
 ## 1.1.0 - 2026-08-05
 
 - Add backward-compatible multi-user login using each user's CalDAV credentials

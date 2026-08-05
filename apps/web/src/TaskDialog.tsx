@@ -1,10 +1,11 @@
 import type { Calendar, CalendarTask, TaskMutation } from '@dayfront/shared';
 import { useRef, useState, type FormEvent } from 'react';
 
-import { ClockInput } from './ClockInput.js';
+import { ClockInput, type TimeFormat } from './ClockInput.js';
 
 interface Props {
   calendars: readonly Calendar[];
+  timeFormat?: TimeFormat;
   task?: CalendarTask;
   initialDate?: string;
   simple?: boolean;
@@ -62,6 +63,7 @@ function ruleChoice(rule?: string) {
 
 export function TaskDialog({
   calendars,
+  timeFormat = '12h',
   task,
   initialDate,
   simple = false,
@@ -478,6 +480,7 @@ export function TaskDialog({
                       <ClockInput
                         label="Start time"
                         value={timePart(start)}
+                        timeFormat={timeFormat}
                         onChange={(time) => setStart(withTime(start, time))}
                       />
                     )}
@@ -510,6 +513,7 @@ export function TaskDialog({
                       <ClockInput
                         label="Due time"
                         value={timePart(due)}
+                        timeFormat={timeFormat}
                         onChange={(time) => {
                           const value = withTime(due, time);
                           setDue(value);

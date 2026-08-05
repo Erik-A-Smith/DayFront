@@ -24,6 +24,8 @@ server:
 ui:
   defaultView: month
   darkMode: auto
+  # 12h displays AM/PM; use 24h for times such as 17:30.
+  timeFormat: 12h
   sidebar:
     # enabled removes or includes the sidebar feature; defaultOpen controls its
     # initial collapsed state when enabled.

@@ -223,6 +223,7 @@ export const publicConfigSchema = z.object({
     ui: z.object({
       defaultView: z.enum(['month', 'week', 'day', 'agenda']),
       darkMode: z.enum(['auto', 'light', 'dark']),
+      timeFormat: z.enum(['12h', '24h']).default('12h'),
       defaultCalendar: z.string().optional(),
       sidebar: z
         .object({

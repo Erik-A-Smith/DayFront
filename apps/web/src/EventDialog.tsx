@@ -1,12 +1,13 @@
 import type { Calendar, CalendarEvent, EventMutation } from '@dayfront/shared';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 
-import { ClockInput } from './ClockInput.js';
+import { ClockInput, type TimeFormat } from './ClockInput.js';
 
 interface EventDialogProps {
   calendars: readonly Calendar[];
   event?: CalendarEvent;
   initialDate?: string;
+  timeFormat?: TimeFormat;
   onCancel: () => void;
   onDelete?: (scope: 'series' | 'occurrence') => Promise<void>;
   onSave: (input: EventMutation) => Promise<void>;
@@ -70,6 +71,7 @@ export function EventDialog({
   calendars,
   event,
   initialDate,
+  timeFormat = '12h',
   onCancel,
   onDelete,
   onSave,
@@ -300,6 +302,7 @@ export function EventDialog({
                   <ClockInput
                     label="Start time"
                     value={timePart(start)}
+                    timeFormat={timeFormat}
                     onChange={(time) => {
                       const previous = start;
                       const next = withTime(start, time);
@@ -348,6 +351,7 @@ export function EventDialog({
                   <ClockInput
                     label="End time"
                     value={timePart(end)}
+                    timeFormat={timeFormat}
                     onChange={(time) =>
                       setEnd(withTime(end || datePart(start), time))
                     }

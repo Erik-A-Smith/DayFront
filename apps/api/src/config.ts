@@ -58,6 +58,7 @@ const configSchema = strictObject({
   ui: strictObject({
     defaultView: z.enum(['month', 'week', 'day', 'agenda']),
     darkMode: z.enum(['auto', 'light', 'dark']),
+    timeFormat: z.enum(['12h', '24h']),
     defaultCalendar: z.string().min(1).optional(),
     sidebar: strictObject({
       enabled: z.boolean(),
@@ -119,6 +120,7 @@ const defaults = {
   ui: {
     defaultView: 'month',
     darkMode: 'auto',
+    timeFormat: '12h',
     sidebar: {
       enabled: true,
       defaultOpen: true,
@@ -215,6 +217,7 @@ const envPaths = {
   DAYFRONT_SERVER_TRUST_PROXY: ['server', 'trustProxy'],
   DAYFRONT_UI_DEFAULT_VIEW: ['ui', 'defaultView'],
   DAYFRONT_UI_DARK_MODE: ['ui', 'darkMode'],
+  DAYFRONT_UI_TIME_FORMAT: ['ui', 'timeFormat'],
   DAYFRONT_UI_DEFAULT_CALENDAR: ['ui', 'defaultCalendar'],
   DAYFRONT_UI_SIDEBAR_ENABLED: ['ui', 'sidebar', 'enabled'],
   DAYFRONT_UI_SIDEBAR_DEFAULT_OPEN: ['ui', 'sidebar', 'defaultOpen'],

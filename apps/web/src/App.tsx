@@ -44,6 +44,7 @@ import {
   updateTask,
 } from './api.js';
 import { EventDialog } from './EventDialog.js';
+import type { TimeFormat } from './ClockInput.js';
 import { CalendarManager } from './CalendarManager.js';
 import { taskCalendarRange } from './calendar-display.js';
 import { TaskDialog } from './TaskDialog.js';
@@ -419,6 +420,7 @@ function CalendarApp({
   const [sidebarSettings, setSidebarSettings] = useState(
     defaultSidebarSettings,
   );
+  const [timeFormat, setTimeFormat] = useState<TimeFormat>('12h');
   const [calendarPickerOpen, setCalendarPickerOpen] = useState(false);
   const [taskPickerOpen, setTaskPickerOpen] = useState(true);
   const [calendarManagerOpen, setCalendarManagerOpen] = useState(false);
@@ -441,6 +443,7 @@ function CalendarApp({
     void getPublicConfig()
       .then((config) => {
         document.documentElement.dataset.theme = config.ui.darkMode;
+        setTimeFormat(config.ui.timeFormat);
         setSidebarSettings(config.ui.sidebar);
         setSidebarOpen(
           config.ui.sidebar.enabled && config.ui.sidebar.defaultOpen,
@@ -1193,6 +1196,16 @@ function CalendarApp({
             day: 'Day',
             list: 'Agenda',
           }}
+          eventTimeFormat={{
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: timeFormat === '12h',
+          }}
+          slotLabelFormat={{
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: timeFormat === '12h',
+          }}
           events={loadEvents}
           datesSet={(info) =>
             updateUrlDate(
@@ -1243,6 +1256,7 @@ function CalendarApp({
           )}
           {...(editor.event ? { event: editor.event } : {})}
           {...(editor.initialDate ? { initialDate: editor.initialDate } : {})}
+          timeFormat={timeFormat}
           onCancel={() => setEditor(undefined)}
           onSave={saveEvent}
           {...(editor.event ? { onDelete: removeEvent } : {})}
@@ -1265,6 +1279,7 @@ function CalendarApp({
               : []
           }
           {...(taskInitialDate ? { initialDate: taskInitialDate } : {})}
+          timeFormat={timeFormat}
           onCancel={() => {
             setTaskEditor(taskEditorReturn);
             setTaskEditorReturn(undefined);

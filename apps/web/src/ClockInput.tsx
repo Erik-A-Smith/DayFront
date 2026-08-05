@@ -3,33 +3,50 @@ import { useState } from 'react';
 interface ClockInputProps {
   label: string;
   value: string;
+  timeFormat?: TimeFormat;
   onChange: (value: string) => void;
 }
 
+export type TimeFormat = '12h' | '24h';
 type ClockStep = 'hour' | 'minute' | 'period';
 
-function clockPosition(index: number, total: number) {
-  const angle = (index / total) * Math.PI * 2;
+function clockPosition(index: number, total: number, value: number) {
+  const is24HourFace = total === 24;
+  const angle = (index / (is24HourFace ? 12 : total)) * Math.PI * 2;
+  const radius = is24HourFace && value >= 12 ? 25 : 40;
   return {
-    left: `${50 + Math.sin(angle) * 40}%`,
-    top: `${50 - Math.cos(angle) * 40}%`,
+    left: `${50 + Math.sin(angle) * radius}%`,
+    top: `${50 - Math.cos(angle) * radius}%`,
   };
 }
 
-function displayTime(value: string): string {
+function displayTime(value: string, timeFormat: TimeFormat): string {
   if (!value) return 'Choose time';
   const [hour = 0, minute = 0] = value.split(':').map(Number);
+  if (timeFormat === '24h')
+    return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
   const period = hour >= 12 ? 'PM' : 'AM';
   return `${hour % 12 || 12}:${String(minute).padStart(2, '0')} ${period}`;
 }
 
-export function ClockInput({ label, value, onChange }: ClockInputProps) {
+export function ClockInput({
+  label,
+  value,
+  timeFormat = '12h',
+  onChange,
+}: ClockInputProps) {
   const parsedHour = Number(value.slice(0, 2));
   const parsedMinute = Number(value.slice(3, 5));
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<ClockStep>('hour');
   const [hour, setHour] = useState(
-    Number.isFinite(parsedHour) ? parsedHour % 12 || 12 : 12,
+    Number.isFinite(parsedHour)
+      ? timeFormat === '24h'
+        ? parsedHour
+        : parsedHour % 12 || 12
+      : timeFormat === '24h'
+        ? 0
+        : 12,
   );
   const [minute, setMinute] = useState(
     Number.isFinite(parsedMinute) ? parsedMinute : 0,
@@ -38,7 +55,15 @@ export function ClockInput({ label, value, onChange }: ClockInputProps) {
   function begin() {
     const currentHour = Number(value.slice(0, 2));
     const currentMinute = Number(value.slice(3, 5));
-    setHour(Number.isFinite(currentHour) ? currentHour % 12 || 12 : 12);
+    setHour(
+      Number.isFinite(currentHour)
+        ? timeFormat === '24h'
+          ? currentHour
+          : currentHour % 12 || 12
+        : timeFormat === '24h'
+          ? 0
+          : 12,
+    );
     setMinute(Number.isFinite(currentMinute) ? currentMinute : 0);
     setStep('hour');
     setOpen(true);
@@ -54,7 +79,10 @@ export function ClockInput({ label, value, onChange }: ClockInputProps) {
 
   const values =
     step === 'hour'
-      ? Array.from({ length: 12 }, (_, index) => index + 1)
+      ? Array.from(
+          { length: timeFormat === '24h' ? 24 : 12 },
+          (_, index) => index + (timeFormat === '24h' ? 0 : 1),
+        )
       : Array.from({ length: 12 }, (_, index) => index * 5);
 
   return (
@@ -66,7 +94,7 @@ export function ClockInput({ label, value, onChange }: ClockInputProps) {
         onClick={begin}
       >
         <span aria-hidden="true">◷</span>
-        {displayTime(value)}
+        {displayTime(value, timeFormat)}
       </button>
       {open && (
         <div
@@ -107,14 +135,19 @@ export function ClockInput({ label, value, onChange }: ClockInputProps) {
                 {values.map((item, index) => (
                   <button
                     type="button"
-                    style={clockPosition(index, values.length)}
+                    style={clockPosition(index, values.length, item)}
                     onClick={() => {
                       if (step === 'hour') {
                         setHour(item);
                         setStep('minute');
                       } else {
                         setMinute(item);
-                        setStep('period');
+                        if (timeFormat === '24h') {
+                          onChange(
+                            `${String(hour).padStart(2, '0')}:${String(item).padStart(2, '0')}`,
+                          );
+                          setOpen(false);
+                        } else setStep('period');
                       }
                     }}
                     key={item}
