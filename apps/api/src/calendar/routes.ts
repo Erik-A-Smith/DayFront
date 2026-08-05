@@ -9,7 +9,8 @@ import {
   type EventMutation,
   type TaskMutation,
 } from '@dayfront/shared';
-import { Router } from 'express';
+import { AsyncLocalStorage } from 'node:async_hooks';
+import { Router, type Request } from 'express';
 import { randomUUID } from 'node:crypto';
 
 import { CalDavClient } from '../caldav/client.js';
@@ -136,11 +137,30 @@ function matchVersion(value: string | undefined): string {
 }
 
 export function calendarRouter(
-  client: CalDavClient,
+  clientProvider: CalDavClient | ((request: Request) => CalDavClient),
   maxOccurrences = 5_000,
   subscriptions?: CalendarSubscriptionService,
 ): Router {
   const router = Router();
+  const requestStorage = new AsyncLocalStorage<Request>();
+  const clientFor =
+    typeof clientProvider === 'function'
+      ? (request: Request) => clientProvider(request)
+      : () => clientProvider;
+  const client = new Proxy({} as CalDavClient, {
+    get(_target, property) {
+      const request = requestStorage.getStore();
+      if (!request)
+        throw new Error('CalDAV client requested outside a request context.');
+      // The method is immediately rebound to the request-specific instance.
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      const value = clientFor(request)[property as keyof CalDavClient];
+      return typeof value === 'function'
+        ? value.bind(clientFor(request))
+        : value;
+    },
+  });
+  router.use((request, _response, next) => requestStorage.run(request, next));
 
   router.get('/calendars', async (_request, response) => {
     try {

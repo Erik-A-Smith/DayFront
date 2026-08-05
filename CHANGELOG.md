@@ -2,6 +2,13 @@
 
 All notable changes to DayFront are documented here.
 
+## Unreleased
+
+- Add backward-compatible multi-user login using each user's CalDAV credentials
+- Add encrypted persistent sessions, manual logout, automatic reauthentication, origin validation, and dual login throttling
+- Default new Unraid installations to multi-user login with an automatically generated persistent session secret
+- Preserve legacy single-user behavior for existing installations and explicit configurations
+
 ## 1.0.0 - 2026-08-01
 
 - CalDAV calendar discovery and calendar management

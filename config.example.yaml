@@ -1,8 +1,20 @@
 caldav:
   url: http://caldav.test:5232
+  # Required in single-user mode; omit these in caldav-login mode.
   username: dayfront
   password: change-me
   timeoutMs: 10000
+
+authentication:
+  # single-user preserves the original shared account. caldav-login prompts
+  # each user and verifies the supplied credentials against the server above.
+  mode: single-user
+  # Required only for caldav-login. Use a unique secret of at least 32
+  # characters, keep it stable across restarts, and never commit it.
+  # sessionSecret: replace-with-a-long-random-deployment-secret
+  # Alternatively, use a writable persistent path and DayFront will generate it:
+  # sessionSecretFile: /data/session-secret
+  sessionTtlHours: 720
 
 server:
   host: 0.0.0.0

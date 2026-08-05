@@ -32,6 +32,7 @@ docker compose ps
 Mount the YAML file at `/config/config.yaml`, which is the image's optional default configuration path. Alternatively, omit the mount and provide all required settings through environment variables. Every YAML value can be overridden with its documented environment variable:
 
 - `DAYFRONT_CALDAV_URL`, `DAYFRONT_CALDAV_USERNAME`, `DAYFRONT_CALDAV_PASSWORD`, `DAYFRONT_CALDAV_TIMEOUT_MS`
+- `DAYFRONT_AUTH_MODE`, `DAYFRONT_AUTH_SESSION_SECRET`, `DAYFRONT_AUTH_SESSION_SECRET_FILE`, `DAYFRONT_AUTH_SESSION_TTL_HOURS`
 - `DAYFRONT_SERVER_HOST`, `DAYFRONT_SERVER_PORT`, `DAYFRONT_SERVER_TRUST_PROXY`
 - `DAYFRONT_UI_DEFAULT_VIEW`, `DAYFRONT_UI_DARK_MODE`, `DAYFRONT_UI_DEFAULT_CALENDAR`
 - `DAYFRONT_UI_SIDEBAR_ENABLED`, `DAYFRONT_UI_SIDEBAR_DEFAULT_OPEN`, `DAYFRONT_UI_SIDEBAR_SHOW_BRAND`, `DAYFRONT_UI_SIDEBAR_SHOW_TASKS`, `DAYFRONT_UI_SIDEBAR_SHOW_CALENDARS`
@@ -39,6 +40,8 @@ Mount the YAML file at `/config/config.yaml`, which is the image's optional defa
 - `DAYFRONT_LOG_LEVEL`, `DAYFRONT_LOG_FORMAT`
 
 `TZ` controls the container's system timezone, including timestamps written to logs. It defaults to `UTC` in the Compose and Unraid templates.
+
+The default `DAYFRONT_AUTH_MODE=single-user` requires the configured CalDAV username and password and preserves legacy behavior. For multi-user access, set `DAYFRONT_AUTH_MODE=caldav-login` and omit the shared username/password. Provide either a unique high-entropy `DAYFRONT_AUTH_SESSION_SECRET` of at least 32 characters or a writable `DAYFRONT_AUTH_SESSION_SECRET_FILE`; DayFront creates the latter securely when it does not exist. Keep the secret or file stable to preserve sessions across restarts. `DAYFRONT_AUTH_SESSION_TTL_HOURS` defaults to 720 (30 days). See [security.md](security.md) before exposing the login page externally.
 
 `DAYFRONT_CALENDAR_TIMEZONE` overrides `calendar.timezone`. Use `local` to display values in each browser's timezone, `UTC` for a fixed UTC display, or an IANA timezone such as `America/Toronto` or `Europe/Berlin`. When using a fixed IANA timezone, setting `TZ` to the same value keeps container logs and calendar behavior easier to compare.
 
@@ -51,14 +54,20 @@ is not written to the configured CalDAV server, a database, or browser storage. 
 
 ## Unraid
 
-1. Add the template from `unraid/dayfront.xml` and enter the required CalDAV URL, username, and masked password.
+1. Add the stable template from `unraid/dayfront.xml` and enter the CalDAV URL and shared credentials.
 2. Confirm the port and timezone settings, then start the container.
 3. Unraid downloads the public `ghcr.io/erik-a-smith/dayfront:latest` image; no local source checkout or image build is required.
 4. Open the WebUI link and verify `/health`.
 
-The required template fields are sufficient to start DayFront without a YAML file. For advanced settings and external calendar subscriptions, create `/mnt/user/appdata/dayfront/config.yaml` from `config.example.yaml` and keep the optional read-only `/config` mapping. Environment values entered in the Unraid form take precedence over equivalent YAML values. Structured `calendar_subscriptions` remain YAML-only.
+The stable template remains compatible with the currently published `:latest` image and uses legacy `single-user` mode. Existing installations without an Authentication Mode field continue using that mode and retain the shared CalDAV credentials stored in their local container template.
 
-The checked-in template tracks the latest stable versioned release. The separate `ghcr.io/erik-a-smith/dayfront:beta` image tracks `main` for pre-release testing.
+For advanced settings and external calendar subscriptions, create `/mnt/user/appdata/dayfront/config.yaml` from `config.example.yaml` and keep the optional read-only `/config` mapping. Environment values entered in the Unraid form take precedence over equivalent YAML values. Structured `calendar_subscriptions` remain YAML-only.
+
+### Unraid beta
+
+Use `unraid/dayfront-beta.xml` to test the pre-release `ghcr.io/erik-a-smith/dayfront:beta` image. It defaults to port 8081 and `/mnt/user/appdata/dayfront-beta` so it can run alongside stable without sharing session data. Enter only the CalDAV URL for the default multi-user flow; DayFront generates and persists the session secret automatically.
+
+The beta image tracks `main`. After beta validation, publish the compatible application as `:latest` before changing the stable template to multi-user defaults.
 
 ## Reverse proxy
 

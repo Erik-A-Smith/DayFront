@@ -36,7 +36,7 @@ CalDAV implementations vary in optional features and edge-case behavior. Compati
 
 ## Security boundary
 
-DayFront stores CalDAV credentials only on its backend. It does not currently provide its own user authentication. Keep it on a trusted network or place it behind an authenticating HTTPS reverse proxy before exposing it externally. See [the security guide](docs/security.md).
+DayFront can use one administrator-configured CalDAV account (`single-user`, the default) or prompt each visitor to sign in with their own CalDAV credentials (`caldav-login`). Login sessions are encrypted, persistent, and inaccessible to frontend JavaScript. Use HTTPS before exposing either mode externally. See [the security guide](docs/security.md).
 
 ## Local development
 

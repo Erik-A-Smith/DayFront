@@ -1,6 +1,14 @@
 # Security and reverse-proxy boundary
 
-DayFront is a single-household/self-hosted CalDAV client. The initial release does not implement user accounts or browser login sessions. Anyone who can reach the DayFront web application can use the configured CalDAV account through DayFront. Place DayFront behind an authenticating reverse proxy unless it is reachable only from a trusted private network.
+DayFront supports two authentication modes. `single-user` preserves the original shared configured CalDAV account. Anyone who can reach DayFront can use that account, so place it behind an authenticating reverse proxy unless it is reachable only from a trusted private network. `caldav-login` prompts each visitor for CalDAV credentials and isolates calendar requests by signed-in user.
+
+## CalDAV login sessions
+
+In `caldav-login` mode, the CalDAV origin remains fixed by the administrator. A login is accepted only after successful CalDAV discovery. DayFront encrypts the username, password, issue time, and expiry using AES-256-GCM with a key derived from `authentication.sessionSecret`. The browser receives authenticated ciphertext in an `HttpOnly`, `SameSite=Strict` cookie; frontend JavaScript cannot read it. The secret may be supplied directly or generated with restrictive permissions at `authentication.sessionSecretFile`. Keep the secret stable to preserve sessions across restarts, or rotate it to invalidate every existing session.
+
+Sessions expire after `authentication.sessionTtlHours` and can be removed from the current browser with Sign out. Because sessions are stateless, signing out removes the browser cookie but cannot revoke a copied cookie before expiry. Protect the deployment with HTTPS, choose a unique high-entropy secret, and use a suitably short lifetime for the deployment's risk level.
+
+DayFront rejects cross-origin state-changing requests in login mode, applies dedicated login throttling, gives generic credential errors, and never returns or logs credentials. A session grants the same access as its CalDAV credentials; browser or host compromise remains outside DayFront's security boundary.
 
 ## Credential boundary
 
