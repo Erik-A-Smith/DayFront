@@ -4,6 +4,8 @@ All notable changes to DayFront are documented here.
 
 ## Unreleased
 
+## 1.2.0 - 2026-08-05
+
 - Add configurable 12-hour or 24-hour time display across calendar views and event/task time pickers ([#2](https://github.com/Erik-A-Smith/DayFront/issues/2))
 - Expose the time-format setting through YAML, environment variables, and the stable and beta Unraid templates
 
