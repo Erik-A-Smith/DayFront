@@ -1,0 +1,883 @@
+/*
+ * DayFront visual system
+ *
+ * Keep application-facing styles tied to these semantic tokens. They form the
+ * seam for a future user-theme format without coupling themes to components.
+ */
+:root {
+  color-scheme: dark;
+  --canvas: #05060a;
+  --canvas-raised: rgb(14 16 23 / 82%);
+  --surface: rgb(10 12 18 / 72%);
+  --surface-solid: #0e1017;
+  --surface-hover: rgb(32 37 52 / 78%);
+  --surface-strong: rgb(45 53 75 / 86%);
+  --line: rgb(210 222 255 / 12%);
+  --line-strong: rgb(197 213 255 / 24%);
+  --text: #f5f7ff;
+  --text-soft: #cbd1e2;
+  --muted: #858da3;
+  --accent: #8bb8ff;
+  --accent-strong: #9d8cff;
+  --accent-ink: #090d18;
+  --accent-cool: #a99cff;
+  --danger: #ff8f9b;
+  --danger-bg: rgb(255 105 120 / 10%);
+  --today-bg: rgb(118 166 255 / 10%);
+  --today-ring: rgb(139 184 255 / 38%);
+  --radius-sm: 0.65rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.45rem;
+  --shadow-sm: 0 0.5rem 1.5rem rgb(0 0 0 / 16%);
+  --shadow-lg: 0 1.5rem 5rem rgb(0 0 0 / 42%);
+  color: var(--text);
+  background: var(--canvas);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --canvas: #e9edf5;
+    --canvas-raised: rgb(255 255 255 / 70%);
+    --surface: rgb(255 255 255 / 58%);
+    --surface-solid: #f8faff;
+    --surface-hover: rgb(255 255 255 / 78%);
+    --surface-strong: rgb(225 232 247 / 88%);
+    --line: rgb(48 65 104 / 13%);
+    --line-strong: rgb(55 83 145 / 24%);
+    --text: #141927;
+    --text-soft: #3f4961;
+    --muted: #6f798f;
+    --accent: #3978df;
+    --accent-strong: #7357d9;
+    --accent-ink: #fff;
+    --accent-cool: #6d4ed3;
+    --danger: #c74352;
+    --danger-bg: rgb(199 67 82 / 8%);
+    --today-bg: rgb(57 120 223 / 8%);
+    --today-ring: rgb(57 120 223 / 28%);
+    --shadow-sm: 0 0.5rem 1.5rem rgb(48 63 94 / 10%);
+    --shadow-lg: 0 1.5rem 5rem rgb(48 63 94 / 20%);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --canvas: #05060a;
+  --canvas-raised: rgb(14 16 23 / 82%);
+  --surface: rgb(10 12 18 / 72%);
+  --surface-solid: #0e1017;
+  --surface-hover: rgb(32 37 52 / 78%);
+  --surface-strong: rgb(45 53 75 / 86%);
+  --line: rgb(210 222 255 / 12%);
+  --line-strong: rgb(197 213 255 / 24%);
+  --text: #f5f7ff;
+  --text-soft: #cbd1e2;
+  --muted: #858da3;
+  --accent: #8bb8ff;
+  --accent-strong: #9d8cff;
+  --accent-ink: #090d18;
+  --accent-cool: #a99cff;
+  --danger: #ff8f9b;
+  --danger-bg: rgb(255 105 120 / 10%);
+  --today-bg: rgb(118 166 255 / 10%);
+  --today-ring: rgb(139 184 255 / 38%);
+  --shadow-sm: 0 0.5rem 1.5rem rgb(0 0 0 / 16%);
+  --shadow-lg: 0 1.5rem 5rem rgb(0 0 0 / 42%);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --canvas: #e9edf5;
+  --canvas-raised: rgb(255 255 255 / 70%);
+  --surface: rgb(255 255 255 / 58%);
+  --surface-solid: #f8faff;
+  --surface-hover: rgb(255 255 255 / 78%);
+  --surface-strong: rgb(225 232 247 / 88%);
+  --line: rgb(48 65 104 / 13%);
+  --line-strong: rgb(55 83 145 / 24%);
+  --text: #141927;
+  --text-soft: #3f4961;
+  --muted: #6f798f;
+  --accent: #3978df;
+  --accent-strong: #7357d9;
+  --accent-ink: #fff;
+  --accent-cool: #6d4ed3;
+  --danger: #c74352;
+  --danger-bg: rgb(199 67 82 / 8%);
+  --today-bg: rgb(57 120 223 / 8%);
+  --today-ring: rgb(57 120 223 / 28%);
+  --shadow-sm: 0 0.5rem 1.5rem rgb(48 63 94 / 10%);
+  --shadow-lg: 0 1.5rem 5rem rgb(48 63 94 / 20%);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  color: var(--text);
+  background:
+    radial-gradient(circle at 12% 4%, rgb(78 126 226 / 15%), transparent 28rem),
+    radial-gradient(
+      circle at 90% 96%,
+      rgb(133 91 218 / 10%),
+      transparent 34rem
+    ),
+    var(--canvas);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+summary,
+label,
+.fc-event {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+::selection {
+  color: var(--accent-ink);
+  background: var(--accent);
+}
+
+.app-shell {
+  grid-template-columns: 18.5rem minmax(0, 1fr);
+  background: transparent;
+  isolation: isolate;
+}
+
+.sidebar {
+  position: relative;
+  z-index: 2;
+  padding: 1.6rem 1.25rem 1.25rem;
+  overflow: hidden auto;
+  border-right: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgb(139 184 255 / 7%), transparent 15rem),
+    var(--surface);
+  box-shadow: 1rem 0 4rem rgb(0 0 0 / 10%);
+  backdrop-filter: blur(24px) saturate(1.25);
+}
+
+.sidebar::before {
+  position: absolute;
+  z-index: -1;
+  top: -8rem;
+  left: -7rem;
+  width: 17rem;
+  height: 17rem;
+  border-radius: 50%;
+  background: rgb(119 143 255 / 8%);
+  content: '';
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+.brand {
+  gap: 0.9rem;
+  padding: 0.4rem 0.45rem 1.35rem;
+}
+
+.mark {
+  width: 3.1rem;
+  height: 3.1rem;
+  border-radius: 1rem;
+  filter: drop-shadow(0 0.5rem 1rem rgb(97 131 235 / 20%));
+}
+
+@media (prefers-color-scheme: light) {
+  .mark {
+    filter: invert(1) drop-shadow(0 0.5rem 1rem rgb(52 76 135 / 12%));
+  }
+}
+
+:root[data-theme='light'] .mark {
+  filter: invert(1) drop-shadow(0 0.5rem 1rem rgb(52 76 135 / 12%));
+}
+
+.brand h1 {
+  margin: 0.12rem 0 0;
+  font-size: 1.35rem;
+  font-weight: 780;
+  letter-spacing: -0.035em;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 0.67rem;
+  font-weight: 800;
+}
+
+.calendar-picker {
+  margin-top: 1.5rem;
+}
+
+.picker-summary {
+  min-height: 2.35rem;
+  padding: 0 0.45rem;
+  border-radius: var(--radius-sm);
+  transition:
+    color 150ms ease,
+    background 150ms ease;
+}
+
+.picker-summary:hover {
+  color: var(--text-soft);
+  background: rgb(139 184 255 / 6%);
+}
+
+.picker-summary h2 {
+  color: inherit;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+}
+
+.picker-summary > span,
+.task-group summary span:last-child {
+  min-width: 1.55rem;
+  padding: 0.14rem 0.42rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--canvas-raised);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.task-list {
+  margin-top: 1.5rem;
+  padding-top: 1.4rem;
+}
+
+.calendar-list {
+  gap: 0.3rem;
+}
+
+.calendar-option {
+  min-height: 2.5rem;
+  padding: 0.48rem 0.55rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  color: var(--text-soft);
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+
+.calendar-option:hover {
+  border-color: var(--line);
+  background: var(--surface-hover);
+  transform: translateX(2px);
+}
+
+.calendar-color {
+  width: 0.58rem;
+  height: 0.58rem;
+  border: 2px solid rgb(255 255 255 / 28%);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 8%, transparent);
+}
+
+.manage-calendars-button,
+.task-action,
+.small-action {
+  border-color: var(--line);
+  border-radius: 0.72rem;
+  color: var(--text-soft);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 3%), transparent),
+    var(--canvas-raised);
+  box-shadow: 0 1px rgb(255 255 255 / 4%) inset;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    background 150ms ease,
+    transform 150ms ease;
+}
+
+.manage-calendars-button {
+  min-height: 2.5rem;
+  margin-top: 0.7rem;
+}
+
+.manage-calendars-button:hover,
+.manage-calendars-button:focus-visible,
+.task-action:hover,
+.task-action:focus-visible,
+.small-action:hover,
+.small-action:focus-visible {
+  border-color: var(--line-strong);
+  color: var(--accent);
+  background: var(--surface-hover);
+  transform: translateY(-1px);
+}
+
+.primary-task-action {
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--line));
+  color: var(--accent);
+}
+
+.clear-task-action {
+  border-color: color-mix(in srgb, var(--danger) 25%, var(--line));
+  color: var(--danger);
+  background: var(--danger-bg);
+}
+
+.task-group summary {
+  min-height: 2rem;
+  padding-inline: 0.45rem;
+  border-radius: 0.6rem;
+}
+
+.task-list-row {
+  min-height: 2.1rem;
+  border: 1px solid transparent;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease;
+}
+
+.task-list-row:hover,
+.task-list-row:focus-within {
+  border-color: var(--line);
+  background: var(--surface-hover);
+}
+
+.task-priority {
+  padding: 0.1rem 0.32rem;
+  border-radius: 0.3rem;
+  color: var(--accent-cool);
+  background: color-mix(in srgb, var(--accent-cool) 10%, transparent);
+}
+
+.account-menu {
+  margin-top: 1.5rem;
+  padding: 1rem 0.45rem 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.account-menu button {
+  border-color: var(--line);
+  color: var(--text-soft);
+  background: var(--canvas-raised);
+}
+
+.calendar-main {
+  height: 100vh;
+  padding: 1.2rem;
+  overflow: auto;
+}
+
+.calendar-main::before {
+  position: fixed;
+  z-index: -1;
+  right: 5%;
+  bottom: -14rem;
+  width: 30rem;
+  height: 30rem;
+  border-radius: 50%;
+  background: rgb(135 102 230 / 6%);
+  content: '';
+  pointer-events: none;
+}
+
+.fc {
+  --fc-border-color: var(--line);
+  --fc-neutral-bg-color: var(--surface-hover);
+  --fc-list-event-hover-bg-color: var(--surface-hover);
+  min-height: calc(100vh - 2.4rem);
+  padding: 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow:
+    var(--shadow-sm),
+    0 1px rgb(255 255 255 / 4%) inset;
+  backdrop-filter: blur(20px) saturate(1.12);
+}
+
+.fc .fc-header-toolbar {
+  min-height: 3.1rem;
+  margin-bottom: 1rem;
+}
+
+.fc .fc-toolbar-title {
+  color: var(--text);
+  font-size: clamp(1.35rem, 2.6vw, 2rem);
+  font-weight: 760;
+  letter-spacing: -0.04em;
+}
+
+.fc .fc-button-primary {
+  min-height: 2.45rem;
+  padding: 0.48rem 0.78rem;
+  border-color: var(--line);
+  border-radius: 0.65rem;
+  color: var(--text-soft);
+  background: var(--canvas-raised);
+  font-size: 0.82rem;
+  font-weight: 650;
+  box-shadow: 0 1px rgb(255 255 255 / 4%) inset;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    background 150ms ease,
+    transform 150ms ease;
+}
+
+.fc .fc-button-primary:hover,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  border-color: var(--line-strong);
+  color: var(--text);
+  background: var(--surface-strong);
+  transform: translateY(-1px);
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  color: var(--accent-ink);
+  background: var(--accent);
+  box-shadow: 0 0.25rem 1rem color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.fc .fc-button-group {
+  gap: 0.18rem;
+  padding: 0.2rem;
+  border: 1px solid var(--line);
+  border-radius: 0.82rem;
+  background: rgb(3 5 10 / 24%);
+}
+
+.fc .fc-button-group > .fc-button {
+  margin: 0;
+  border-radius: 0.58rem !important;
+}
+
+.fc .fc-sidebarToggle-button {
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--line));
+  color: var(--accent);
+}
+
+.fc .fc-scrollgrid {
+  overflow: hidden;
+  border-radius: 0.85rem;
+  background: rgb(2 4 9 / 12%);
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+  border-color: var(--line);
+}
+
+.fc .fc-col-header-cell {
+  background: color-mix(in srgb, var(--surface-hover) 55%, transparent);
+}
+
+.fc .fc-col-header-cell-cushion {
+  padding: 0.72rem 0.35rem;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.fc .fc-daygrid-day-number {
+  margin: 0.22rem;
+  padding: 0.28rem 0.48rem;
+  color: var(--text-soft);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+}
+
+.fc .fc-day-other .fc-daygrid-day-number {
+  opacity: 0.28;
+}
+
+.fc .fc-daygrid-day-frame {
+  transition: background 140ms ease;
+}
+
+.fc .fc-daygrid-day-frame:hover {
+  background: rgb(139 184 255 / 4%);
+}
+
+.fc .fc-day-today {
+  background: var(--today-bg) !important;
+  box-shadow:
+    inset 0 0 0 1px var(--today-ring),
+    inset 0 0 2rem rgb(139 184 255 / 4%);
+}
+
+.fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+  color: var(--accent-ink);
+  background: var(--accent);
+  box-shadow: 0 0.3rem 1rem color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.fc .fc-event {
+  margin-inline: 0.12rem;
+  padding: 0.14rem 0.32rem;
+  border: 0;
+  border-radius: 0.42rem;
+  font-size: 0.76rem;
+  box-shadow:
+    0 0.18rem 0.5rem rgb(0 0 0 / 13%),
+    inset 0 1px rgb(255 255 255 / 15%);
+}
+
+.fc .fc-event:hover,
+.fc .fc-event:focus-visible {
+  filter: brightness(1.08) saturate(1.08);
+  transform: translateY(-2px) scale(1.012);
+  box-shadow:
+    0 0.5rem 1.2rem rgb(0 0 0 / 30%),
+    inset 0 1px rgb(255 255 255 / 24%);
+}
+
+.calendar-entry-content {
+  gap: 0.3rem;
+}
+
+.calendar-entry-title {
+  font-weight: 650;
+}
+
+.calendar-entry-time {
+  opacity: 0.82;
+  font-size: 0.7rem;
+}
+
+.error-banner {
+  position: relative;
+  z-index: 3;
+  border-color: color-mix(in srgb, var(--danger) 30%, transparent);
+  border-radius: var(--radius-md);
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger-bg) 80%, var(--surface-solid));
+  box-shadow: var(--shadow-sm);
+}
+
+.dialog-backdrop,
+.clock-backdrop {
+  background: rgb(2 3 7 / 74%);
+  backdrop-filter: blur(12px) saturate(0.8);
+  animation: backdrop-in 180ms ease-out;
+}
+
+.event-dialog,
+.entry-type-dialog,
+.clock-dialog {
+  border-color: var(--line-strong);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(155deg, rgb(139 184 255 / 7%), transparent 13rem),
+    var(--surface);
+  box-shadow:
+    var(--shadow-lg),
+    0 1px rgb(255 255 255 / 6%) inset;
+  backdrop-filter: blur(32px) saturate(1.25);
+  animation: dialog-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.event-dialog {
+  padding: 1.45rem;
+}
+
+.dialog-heading h2,
+.entry-type-dialog h2,
+.clock-heading h3 {
+  color: var(--text);
+  font-weight: 750;
+  letter-spacing: -0.025em;
+}
+
+.icon-button,
+.clock-close {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  place-items: center;
+  transition:
+    color 140ms ease,
+    background 140ms ease,
+    transform 140ms ease;
+}
+
+.icon-button:hover,
+.clock-close:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+  transform: rotate(5deg);
+}
+
+.event-dialog label,
+.date-time-field {
+  color: var(--text-soft);
+  font-size: 0.76rem;
+  letter-spacing: 0.015em;
+}
+
+.event-dialog input,
+.event-dialog select,
+.event-dialog textarea,
+.login-card input,
+.clock-trigger {
+  min-height: 2.7rem;
+  border-color: var(--line);
+  border-radius: 0.72rem;
+  color: var(--text);
+  background: var(--canvas-raised);
+  box-shadow: 0 1px rgb(255 255 255 / 3%) inset;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    background 140ms ease;
+}
+
+.event-dialog input:hover,
+.event-dialog select:hover,
+.event-dialog textarea:hover,
+.login-card input:hover,
+.clock-trigger:hover {
+  border-color: var(--line-strong);
+}
+
+.event-dialog input:focus,
+.event-dialog select:focus,
+.event-dialog textarea:focus,
+.login-card input:focus {
+  border-color: var(--accent);
+  outline: none;
+  background: var(--surface-hover);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.dialog-actions button,
+.calendar-manager-row button,
+.calendar-manager > .primary-button,
+.calendar-manager .dialog-actions button,
+.entry-type-actions button,
+.clock-footer button {
+  min-height: 2.5rem;
+  border-color: var(--line);
+  border-radius: 0.7rem;
+  color: var(--text-soft);
+  background: var(--canvas-raised);
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease;
+}
+
+.dialog-actions button:hover,
+.calendar-manager-row button:hover,
+.entry-type-actions button:hover,
+.clock-footer button:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-hover);
+  transform: translateY(-1px);
+}
+
+.dialog-actions .primary,
+.calendar-manager .primary-button,
+.login-card button.primary {
+  border-color: transparent;
+  color: var(--accent-ink);
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  box-shadow: 0 0.45rem 1.25rem
+    color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.dialog-actions .danger,
+.calendar-manager .danger-button {
+  border-color: color-mix(in srgb, var(--danger) 28%, transparent);
+  color: var(--danger);
+  background: var(--danger-bg);
+}
+
+.subtask-editor,
+.calendar-manager-row,
+.calendar-components {
+  border-color: var(--line);
+  border-radius: 0.82rem;
+  background: color-mix(in srgb, var(--surface-hover) 55%, transparent);
+}
+
+.clock-face {
+  border-color: var(--line-strong);
+  background:
+    radial-gradient(
+      circle at center,
+      var(--accent) 0 0.18rem,
+      transparent 0.2rem
+    ),
+    radial-gradient(
+      circle at center,
+      transparent 60%,
+      rgb(139 184 255 / 6%) 100%
+    ),
+    var(--canvas-raised);
+  box-shadow: inset 0 0 2rem rgb(0 0 0 / 14%);
+}
+
+.login-shell {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgb(71 118 222 / 20%),
+      transparent 30rem
+    ),
+    radial-gradient(
+      circle at 85% 75%,
+      rgb(139 97 220 / 13%),
+      transparent 32rem
+    ),
+    var(--canvas);
+}
+
+.login-shell::before {
+  position: absolute;
+  width: min(70vw, 50rem);
+  aspect-ratio: 1;
+  border: 1px solid rgb(139 184 255 / 10%);
+  border-radius: 50%;
+  content: '';
+  box-shadow:
+    0 0 0 6rem rgb(139 184 255 / 2.5%),
+    0 0 0 12rem rgb(157 140 255 / 2%);
+}
+
+.login-card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 27rem);
+  padding: 2.4rem;
+  border-color: var(--line-strong);
+  border-radius: 1.6rem;
+  background: var(--surface);
+  box-shadow:
+    var(--shadow-lg),
+    0 1px rgb(255 255 255 / 6%) inset;
+  backdrop-filter: blur(32px) saturate(1.25);
+}
+
+.login-card > img {
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: 1rem;
+  border-radius: 1.15rem;
+  filter: drop-shadow(0 0.65rem 1.2rem rgb(90 126 230 / 22%));
+}
+
+.login-card h1 {
+  margin-bottom: 0.45rem;
+  font-size: 1.8rem;
+  letter-spacing: -0.04em;
+}
+
+.login-card button.primary {
+  min-height: 2.8rem;
+  border-radius: 0.75rem;
+  transition:
+    filter 140ms ease,
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.login-card button.primary:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 0.65rem 1.5rem
+    color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.985);
+  }
+}
+
+@media (max-width: 760px) {
+  .sidebar {
+    padding: 0.75rem 1rem;
+    overflow: visible;
+    background: var(--surface-solid);
+    backdrop-filter: none;
+  }
+
+  .brand {
+    padding-bottom: 0.35rem;
+  }
+
+  .mark {
+    width: 2.45rem;
+    height: 2.45rem;
+  }
+
+  .calendar-main {
+    height: calc(100vh - 8rem);
+    padding: 0.5rem;
+  }
+
+  .fc {
+    min-height: calc(100vh - 9rem);
+    padding: 0.65rem;
+    border-radius: 1rem;
+  }
+
+  .fc .fc-header-toolbar {
+    gap: 0.5rem;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 1.3rem;
+  }
+
+  .fc .fc-col-header-cell-cushion {
+    letter-spacing: 0.04em;
+  }
+
+  .event-dialog,
+  .login-card {
+    padding: 1.2rem;
+    border-radius: 1.1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
