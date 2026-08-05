@@ -27,15 +27,16 @@ ENV NODE_ENV=production \
     DAYFRONT_SERVER_HOST=0.0.0.0 \
     DAYFRONT_SERVER_PORT=8080
 WORKDIR /app
-RUN apk add --no-cache tini
+RUN apk add --no-cache su-exec tini
 COPY --from=production-dependencies /workspace/node_modules ./node_modules
 COPY --from=production-dependencies /workspace/apps/api/node_modules ./apps/api/node_modules
 COPY --from=build /workspace/apps/api/dist ./apps/api/dist
 COPY --from=build /workspace/apps/web/dist ./web
+COPY docker-entrypoint.sh /usr/local/bin/dayfront-entrypoint
 RUN mkdir -p /config /data && chown -R node:node /app /config /data
-USER node
+RUN chmod 755 /usr/local/bin/dayfront-entrypoint
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:8080/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
-ENTRYPOINT ["/sbin/tini", "--"]
+  CMD su-exec node node -e "fetch('http://127.0.0.1:8080/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/dayfront-entrypoint"]
 CMD ["node", "apps/api/dist/server.js"]
