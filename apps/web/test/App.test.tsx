@@ -542,7 +542,11 @@ describe('DayFront calendar', () => {
       ).not.toBeDisabled(),
     );
 
-    const completedSummary = screen.getByText('Completed').closest('summary');
+    const completedSummary = screen
+      .getByText('Completed', {
+        selector: '.task-group summary span:first-child',
+      })
+      .closest('summary');
     expect(completedSummary?.parentElement).not.toHaveAttribute('open');
     fireEvent.click(completedSummary!);
     expect(await screen.findByText('Completed fixture task')).toBeVisible();
@@ -836,6 +840,17 @@ describe('DayFront calendar', () => {
     expect(
       screen.getByRole('button', { name: 'Start time' }),
     ).toHaveTextContent('3:45 PM');
+    expect(screen.getByRole('button', { name: 'End time' })).toHaveTextContent(
+      '4:45 PM',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'End time' }));
+    fireEvent.click(screen.getByRole('button', { name: '1' }));
+    fireEvent.click(screen.getByRole('button', { name: '15' }));
+    fireEvent.click(screen.getByRole('button', { name: 'PM' }));
+    expect(
+      screen.getByRole('button', { name: 'Start time' }),
+    ).toHaveTextContent('12:15 PM');
 
     fireEvent.change(screen.getByLabelText('Start date'), {
       target: { value: '2026-08-06' },
@@ -865,6 +880,35 @@ describe('DayFront calendar', () => {
 
     expect(screen.getByLabelText('Start date')).toHaveValue('2026-08-04');
     expect(screen.getByLabelText('End date')).toHaveValue('2026-08-04');
+  });
+
+  it('keeps a valid event end even when the duration is under one hour', () => {
+    render(
+      <EventDialog
+        calendars={[
+          {
+            id: 'personal',
+            displayName: 'Personal',
+            components: ['VEVENT'],
+          },
+        ]}
+        initialDate="2026-08-04T14:30:00-04:00"
+        onCancel={() => undefined}
+        onSave={() => Promise.resolve()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start time' }));
+    fireEvent.click(screen.getByRole('button', { name: '3' }));
+    fireEvent.click(screen.getByRole('button', { name: '00' }));
+    fireEvent.click(screen.getByRole('button', { name: 'PM' }));
+
+    expect(
+      screen.getByRole('button', { name: 'Start time' }),
+    ).toHaveTextContent('3:00 PM');
+    expect(screen.getByRole('button', { name: 'End time' })).toHaveTextContent(
+      '3:30 PM',
+    );
   });
 
   it('keeps task start and due dates ordered when either date changes', () => {

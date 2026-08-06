@@ -54,6 +54,12 @@ function withTime(value: string, time: string): string {
   return date && time ? `${date}T${time}` : value;
 }
 
+function shiftTime(value: string, hours: number): string {
+  const date = new Date(value.slice(0, 16));
+  date.setHours(date.getHours() + hours);
+  return localValue(date.toISOString(), false);
+}
+
 function ruleChoice(rule?: string) {
   if (!rule) return 'none';
   return (
@@ -481,7 +487,12 @@ export function TaskDialog({
                         label="Start time"
                         value={timePart(start)}
                         timeFormat={timeFormat}
-                        onChange={(time) => setStart(withTime(start, time))}
+                        onChange={(time) => {
+                          const value = withTime(start, time);
+                          setStart(value);
+                          if (value && due && value >= due)
+                            setDue(shiftTime(value, 1));
+                        }}
                       />
                     )}
                   </div>
@@ -517,7 +528,10 @@ export function TaskDialog({
                         onChange={(time) => {
                           const value = withTime(due, time);
                           setDue(value);
-                          if (recurrence !== 'none' && !start) setStart(value);
+                          if (value && start && value <= start)
+                            setStart(shiftTime(value, -1));
+                          else if (recurrence !== 'none' && !start)
+                            setStart(value);
                         }}
                       />
                     )}
