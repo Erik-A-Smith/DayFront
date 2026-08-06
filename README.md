@@ -42,6 +42,8 @@ CalDAV implementations vary in optional features and edge-case behavior. Compati
 
 ## Screenshots
 
+### Light theme
+
 <table>
   <thead>
     <tr>
@@ -53,25 +55,38 @@ CalDAV implementations vary in optional features and edge-case behavior. Compati
   <tbody>
     <tr>
       <td>
-        <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="docs/images/Dark%20Theme/Calendar-Main.png" />
-          <source media="(prefers-color-scheme: light)" srcset="docs/images/Light%20Theme/Calendar-Main.png" />
-          <img src="docs/images/Light%20Theme/Calendar-Main.png" alt="DayFront calendar in month view" width="420" />
-        </picture>
+        <img src="docs/images/Light%20Theme/Calendar-Main.png" alt="DayFront light theme calendar in month view" width="420" />
       </td>
       <td>
-        <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="docs/images/Dark%20Theme/Calendar%2BSidebar-Main.png" />
-          <source media="(prefers-color-scheme: light)" srcset="docs/images/Light%20Theme/Calendar%2BSidebar-Main.png" />
-          <img src="docs/images/Light%20Theme/Calendar%2BSidebar-Main.png" alt="DayFront calendar with the calendar and task sidebar open" width="420" />
-        </picture>
+        <img src="docs/images/Light%20Theme/Calendar%2BSidebar-Main.png" alt="DayFront light theme calendar with the calendar and task sidebar open" width="420" />
       </td>
       <td>
-        <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="docs/images/Dark%20Theme/Login-Page.png" />
-          <source media="(prefers-color-scheme: light)" srcset="docs/images/Light%20Theme/Login-Page.png" />
-          <img src="docs/images/Light%20Theme/Login-Page.png" alt="DayFront CalDAV login page" width="420" />
-        </picture>
+        <img src="docs/images/Light%20Theme/Login-Page.png" alt="DayFront light theme CalDAV login page" width="420" />
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+### Dark theme
+
+<table>
+  <thead>
+    <tr>
+      <th>Calendar</th>
+      <th>Calendar and tasks</th>
+      <th>Login</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <img src="docs/images/Dark%20Theme/Calendar-Main.png" alt="DayFront dark theme calendar in month view" width="420" />
+      </td>
+      <td>
+        <img src="docs/images/Dark%20Theme/Calendar%2BSidebar-Main.png" alt="DayFront dark theme calendar with the calendar and task sidebar open" width="420" />
+      </td>
+      <td>
+        <img src="docs/images/Dark%20Theme/Login-Page.png" alt="DayFront dark theme CalDAV login page" width="420" />
       </td>
     </tr>
   </tbody>
