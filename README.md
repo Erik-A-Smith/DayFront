@@ -11,7 +11,13 @@
 
 _Own your day. Own your data._
 
-![DayFront month view with CalDAV calendars, events, and tasks](docs/images/dayfront-calendar.png)
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/Dark%20Theme/Calendar-Main.png" />
+    <source media="(prefers-color-scheme: light)" srcset="docs/images/Light%20Theme/Calendar-Main.png" />
+    <img src="docs/images/Light%20Theme/Calendar-Main.png" alt="DayFront calendar in month view" width="1100" />
+  </picture>
+</p>
 
 DayFront is a modern, self-hosted web interface for calendars and tasks stored on an existing CalDAV server.
 
@@ -33,6 +39,32 @@ DayFront uses standard CalDAV and WebDAV discovery and connects to standards-com
 - Docker, Compose, and Unraid deployment support
 
 CalDAV implementations vary in optional features and edge-case behavior. Compatibility reports and fixes for different servers are welcome.
+
+## Screenshots
+
+<details>
+  <summary><strong>Calendar and task sidebar</strong></summary>
+  <br />
+  <p align="center">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="docs/images/Dark%20Theme/Calendar%2BSidebar-Main.png" />
+      <source media="(prefers-color-scheme: light)" srcset="docs/images/Light%20Theme/Calendar%2BSidebar-Main.png" />
+      <img src="docs/images/Light%20Theme/Calendar%2BSidebar-Main.png" alt="DayFront calendar with the calendar and task sidebar open" width="1100" />
+    </picture>
+  </p>
+</details>
+
+<details>
+  <summary><strong>Login</strong></summary>
+  <br />
+  <p align="center">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="docs/images/Dark%20Theme/Login-Page.png" />
+      <source media="(prefers-color-scheme: light)" srcset="docs/images/Light%20Theme/Login-Page.png" />
+      <img src="docs/images/Light%20Theme/Login-Page.png" alt="DayFront CalDAV login page" width="1100" />
+    </picture>
+  </p>
+</details>
 
 ## Security boundary
 
@@ -75,6 +107,10 @@ docker compose up -d --build dayfront
 ```
 
 See [the deployment guide](docs/deployment.md) for Docker, Compose, Unraid, timezone, health-check, and reverse-proxy configuration.
+
+## Support DayFront
+
+If DayFront makes your self-hosted setup a little better, you can [support its development on Buy Me a Coffee](https://buymeacoffee.com/maplepotion).
 
 ## License
 

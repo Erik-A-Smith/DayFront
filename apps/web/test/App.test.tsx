@@ -115,7 +115,9 @@ describe('DayFront calendar', () => {
         body: JSON.stringify({ username: 'alice', password: 'secret' }),
       }),
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Hide sidebar' }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Hide sidebar' }),
+    );
     const signOut = screen.getByRole('button', { name: 'Sign out' });
     const toolbarButtons = Array.from(
       signOut.closest('.fc-toolbar-chunk')?.querySelectorAll('button') ?? [],
@@ -453,15 +455,18 @@ describe('DayFront calendar', () => {
 
     render(<App />);
 
-    expect(
-      await screen.findByRole('heading', { name: 'DayFront' }),
-    ).toBeInTheDocument();
-    expect(await screen.findByText('Personal')).toBeInTheDocument();
     await waitFor(() =>
       expect(document.querySelector('.fc-toolbar-title')).toHaveTextContent(
         'March 2026',
       ),
     );
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Show sidebar' }),
+    );
+    expect(
+      await screen.findByRole('heading', { name: 'DayFront' }),
+    ).toBeInTheDocument();
+    expect(await screen.findByText('Personal')).toBeInTheDocument();
     expect(new URL(window.location.href).searchParams.get('date')).toBe(
       '2026-03-12',
     );

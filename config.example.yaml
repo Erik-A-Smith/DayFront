@@ -30,7 +30,7 @@ ui:
     # enabled removes or includes the sidebar feature; defaultOpen controls its
     # initial collapsed state when enabled.
     enabled: true
-    defaultOpen: true
+    defaultOpen: false
     showBrand: true
     showTasks: true
     showCalendars: true

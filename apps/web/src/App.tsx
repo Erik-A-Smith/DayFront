@@ -104,7 +104,7 @@ const fallbackColors = [
 
 const defaultSidebarSettings = {
   enabled: true,
-  defaultOpen: true,
+  defaultOpen: false,
   showBrand: true,
   showTasks: true,
   showCalendars: true,
@@ -460,7 +460,7 @@ function CalendarApp({
   const [taskEditorReturn, setTaskEditorReturn] = useState<CalendarTask>();
   const [taskInitialDate, setTaskInitialDate] = useState<string>();
   const [creationDate, setCreationDate] = useState<string>();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [calendarControlsOpen, setCalendarControlsOpen] = useState(false);
   const [calendarFullscreen, setCalendarFullscreen] = useState(false);
   const [sidebarSettings, setSidebarSettings] = useState(

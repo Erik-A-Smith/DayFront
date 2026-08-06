@@ -466,15 +466,13 @@ label,
   pointer-events: none;
 }
 
-.calendar-main .fc-view-harness {
-  transform: translate3d(var(--calendar-swipe-x, 0), 0, 0);
-}
-
 .calendar-main.is-swipe-tracking .fc-view-harness {
+  transform: translate3d(var(--calendar-swipe-x, 0), 0, 0);
   will-change: transform;
 }
 
 .calendar-main.is-swipe-settling .fc-view-harness {
+  transform: translate3d(var(--calendar-swipe-x, 0), 0, 0);
   transition: transform 180ms cubic-bezier(0.22, 0.8, 0.25, 1);
 }
 
@@ -1465,6 +1463,62 @@ input[type='checkbox']:disabled {
   transform: translateY(-1px);
   box-shadow: 0 0.65rem 1.5rem
     color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+.login-support {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.4rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.login-support p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.login-support a {
+  display: inline-flex;
+  min-height: 2.35rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.48rem 0.72rem;
+  border: 1px solid color-mix(in srgb, var(--accent-cool) 28%, var(--line));
+  border-radius: 0.7rem;
+  color: var(--accent-cool);
+  background: color-mix(in srgb, var(--accent-cool) 8%, var(--canvas-raised));
+  font-size: 0.75rem;
+  font-weight: 720;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    border-color 140ms ease,
+    color 140ms ease,
+    background 140ms ease,
+    transform 140ms ease;
+}
+
+.login-support a:hover,
+.login-support a:focus-visible {
+  border-color: color-mix(in srgb, var(--accent-cool) 55%, var(--line));
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent-cool) 14%, var(--surface-hover));
+  transform: translateY(-1px);
+}
+
+.login-support svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
 }
 
 @keyframes backdrop-in {
