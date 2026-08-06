@@ -12,6 +12,12 @@
 _Own your day. Own your data._
 
 <p align="center">
+  <a href="https://buymeacoffee.com/maplepotion">
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="42" alt="Support DayFront on Buy Me a Coffee" />
+  </a>
+</p>
+
+<p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/Dark%20Theme/Calendar-Main.png" />
     <source media="(prefers-color-scheme: light)" srcset="docs/images/Light%20Theme/Calendar-Main.png" />
@@ -24,10 +30,6 @@ DayFront is a modern, self-hosted web interface for calendars and tasks stored o
 DayFront uses standard CalDAV and WebDAV discovery and connects to standards-compliant CalDAV servers through the `caldav` configuration.
 
 > **Status:** DayFront 1.0 is stable and ready for self-hosted deployment. Compatibility reports for different CalDAV servers are welcome.
-
-## Support DayFront
-
-If DayFront makes your self-hosted setup a little better, you can [support its development on Buy Me a Coffee](https://buymeacoffee.com/maplepotion).
 
 ## Features
 
