@@ -25,6 +25,10 @@ DayFront uses standard CalDAV and WebDAV discovery and connects to standards-com
 
 > **Status:** DayFront 1.0 is stable and ready for self-hosted deployment. Compatibility reports for different CalDAV servers are welcome.
 
+## Support DayFront
+
+If DayFront makes your self-hosted setup a little better, you can [support its development on Buy Me a Coffee](https://buymeacoffee.com/maplepotion).
+
 ## Features
 
 - Month, week, day, and agenda calendar views
@@ -133,10 +137,6 @@ docker compose up -d --build dayfront
 ```
 
 See [the deployment guide](docs/deployment.md) for Docker, Compose, Unraid, timezone, health-check, and reverse-proxy configuration.
-
-## Support DayFront
-
-If DayFront makes your self-hosted setup a little better, you can [support its development on Buy Me a Coffee](https://buymeacoffee.com/maplepotion).
 
 ## License
 
