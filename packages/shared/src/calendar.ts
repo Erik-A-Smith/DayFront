@@ -228,14 +228,14 @@ export const publicConfigSchema = z.object({
       sidebar: z
         .object({
           enabled: z.boolean(),
-          defaultOpen: z.boolean().default(true),
+          defaultOpen: z.boolean().default(false),
           showBrand: z.boolean(),
           showTasks: z.boolean(),
           showCalendars: z.boolean(),
         })
         .default({
           enabled: true,
-          defaultOpen: true,
+          defaultOpen: false,
           showBrand: true,
           showTasks: true,
           showCalendars: true,

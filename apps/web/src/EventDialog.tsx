@@ -52,6 +52,12 @@ function oneHourAfter(value: string): string {
   return localDateTime(date.toISOString());
 }
 
+function oneHourBefore(value: string): string {
+  const date = new Date(value.slice(0, 16));
+  date.setHours(date.getHours() - 1);
+  return localDateTime(date.toISOString());
+}
+
 const commonRules = {
   daily: 'FREQ=DAILY',
   weekly: 'FREQ=WEEKLY',
@@ -304,16 +310,14 @@ export function EventDialog({
                     value={timePart(start)}
                     timeFormat={timeFormat}
                     onChange={(time) => {
-                      const previous = start;
                       const next = withTime(start, time);
                       setStart(next);
-                      if (!event && next)
-                        setEnd((current) =>
-                          !current ||
-                          (previous && current === oneHourAfter(previous))
-                            ? oneHourAfter(next)
-                            : current,
-                        );
+                      if (next)
+                        setEnd((current) => {
+                          if (!current || next >= current)
+                            return oneHourAfter(next);
+                          return current;
+                        });
                     }}
                   />
                 )}
@@ -352,9 +356,12 @@ export function EventDialog({
                     label="End time"
                     value={timePart(end)}
                     timeFormat={timeFormat}
-                    onChange={(time) =>
-                      setEnd(withTime(end || datePart(start), time))
-                    }
+                    onChange={(time) => {
+                      const next = withTime(end || datePart(start), time);
+                      setEnd(next);
+                      if (next && start && next <= start)
+                        setStart(oneHourBefore(next));
+                    }}
                   />
                 )}
               </div>

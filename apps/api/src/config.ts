@@ -123,7 +123,7 @@ const defaults = {
     timeFormat: '12h',
     sidebar: {
       enabled: true,
-      defaultOpen: true,
+      defaultOpen: false,
       showBrand: true,
       showTasks: true,
       showCalendars: true,

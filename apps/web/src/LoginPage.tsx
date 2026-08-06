@@ -65,6 +65,19 @@ export function LoginPage({
             {submitting ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
+        <aside className="login-support" aria-label="Support DayFront">
+          <p>Enjoying DayFront?</p>
+          <a
+            href="https://buymeacoffee.com/maplepotion"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 8h12v6.5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5V8Zm12 2h1.25a2.75 2.75 0 0 1 0 5.5H17M8 4.5c0 1 1 1.25 1 2.25m3-2.25c0 1 1 1.25 1 2.25" />
+            </svg>
+            Support DayFront
+          </a>
+        </aside>
       </section>
     </main>
   );

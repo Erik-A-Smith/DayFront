@@ -9,6 +9,7 @@ import {
   useEffect,
   useRef,
   useState,
+  type TouchEvent as ReactTouchEvent,
   type WheelEvent,
 } from 'react';
 
@@ -70,6 +71,7 @@ export function CalendarEntryContent({
   const type = entrySymbols[entry.entryType];
   return (
     <span className="calendar-entry-content">
+      {timeText && <span className="calendar-entry-time">{timeText}</span>}
       <span className="calendar-entry-title">{entry.title}</span>
       <span
         className={`calendar-entry-icon calendar-entry-type calendar-entry-${entry.entryType}`}
@@ -87,7 +89,6 @@ export function CalendarEntryContent({
           ↻
         </span>
       )}
-      {timeText && <span className="calendar-entry-time">{timeText}</span>}
     </span>
   );
 }
@@ -103,7 +104,7 @@ const fallbackColors = [
 
 const defaultSidebarSettings = {
   enabled: true,
-  defaultOpen: true,
+  defaultOpen: false,
   showBrand: true,
   showTasks: true,
   showCalendars: true,
@@ -115,6 +116,22 @@ function colorFor(calendar: Calendar, index: number): string {
     fallbackColors[index % fallbackColors.length] ??
     '#5b8def'
   );
+}
+
+function entryTextColor(background: string): '#ffffff' | '#090d18' {
+  const hex = background.replace('#', '');
+  if (!/^[0-9a-f]{6}$/i.test(hex)) return '#ffffff';
+  const channels = [0, 2, 4].map((offset) =>
+    Number.parseInt(hex.slice(offset, offset + 2), 16),
+  );
+  const [red = 0, green = 0, blue = 0] = channels.map((channel) => {
+    const value = channel / 255;
+    return value <= 0.04045
+      ? value / 12.92
+      : Math.pow((value + 0.055) / 1.055, 2.4);
+  });
+  const luminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+  return luminance > 0.179 ? '#090d18' : '#ffffff';
 }
 
 function localDateKey(value: string): string {
@@ -311,6 +328,25 @@ function isOnScrollableSurface(
   return false;
 }
 
+function isOnHorizontallyScrollableSurface(
+  target: EventTarget | null,
+  boundary: HTMLElement,
+): boolean {
+  if (!(target instanceof Element)) return false;
+  let element: Element | null = target;
+  while (element) {
+    if (element instanceof HTMLElement) {
+      const style = window.getComputedStyle(element);
+      const canScroll = /(auto|scroll)/.test(style.overflowX);
+      if (canScroll && element.scrollWidth > element.clientWidth + 1)
+        return true;
+    }
+    if (element === boundary) break;
+    element = element.parentElement;
+  }
+  return false;
+}
+
 function TaskGroup({
   title,
   tasks,
@@ -398,10 +434,18 @@ function CalendarApp({
   onLogout?: () => void;
 }) {
   const calendarRef = useRef<FullCalendar>(null);
+  const calendarMainRef = useRef<HTMLElement>(null);
   const wheelDistance = useRef(0);
   const wheelReset = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
+  const touchStart = useRef<{ x: number; y: number; time: number } | undefined>(
+    undefined,
+  );
+  const swipeReset = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  const fullscreenFallback = useRef(false);
   const [calendars, setCalendars] = useState<Calendar[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string>();
@@ -416,7 +460,9 @@ function CalendarApp({
   const [taskEditorReturn, setTaskEditorReturn] = useState<CalendarTask>();
   const [taskInitialDate, setTaskInitialDate] = useState<string>();
   const [creationDate, setCreationDate] = useState<string>();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [calendarControlsOpen, setCalendarControlsOpen] = useState(false);
+  const [calendarFullscreen, setCalendarFullscreen] = useState(false);
   const [sidebarSettings, setSidebarSettings] = useState(
     defaultSidebarSettings,
   );
@@ -429,6 +475,44 @@ function CalendarApp({
     new Set(),
   );
   const [initialCalendarDate] = useState(() => dateFromUrl());
+  const [responsiveDayMaxEvents, setResponsiveDayMaxEvents] = useState<
+    true | number
+  >(true);
+
+  useEffect(() => {
+    const surface = calendarMainRef.current;
+    if (!surface || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(([entry]) => {
+      if (!entry) return;
+      const width = entry.contentRect.width;
+      const nextLimit =
+        width < 720 ? 0 : width < 980 ? 1 : width < 1240 ? 2 : true;
+      setResponsiveDayMaxEvents((current) =>
+        current === nextLimit ? current : nextLimit,
+      );
+    });
+    observer.observe(surface);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const button = calendarMainRef.current?.querySelector<HTMLButtonElement>(
+      '.fc-compactMenu-button',
+    );
+    button?.setAttribute('aria-expanded', String(calendarControlsOpen));
+  }, [calendarControlsOpen]);
+
+  useEffect(() => {
+    const syncFullscreenState = () => {
+      if (!fullscreenFallback.current)
+        setCalendarFullscreen(
+          document.fullscreenElement === calendarMainRef.current,
+        );
+    };
+    document.addEventListener('fullscreenchange', syncFullscreenState);
+    return () =>
+      document.removeEventListener('fullscreenchange', syncFullscreenState);
+  }, []);
 
   useEffect(() => {
     const navigateFromHistory = () => {
@@ -554,21 +638,23 @@ function CalendarApp({
             colorFor(calendar, index),
           ]),
         );
-        const calendarEntries: object[] = events.map(
-          (event: CalendarEvent) => ({
+        const calendarEntries: object[] = events.map((event: CalendarEvent) => {
+          const color = colors.get(event.calendarId) ?? '#5b8def';
+          return {
             id: event.id,
             title: event.title,
             start: event.start,
             end: event.end,
             allDay: event.allDay,
-            backgroundColor: colors.get(event.calendarId),
-            borderColor: colors.get(event.calendarId),
+            backgroundColor: color,
+            borderColor: color,
+            textColor: entryTextColor(color),
             editable: !event.readOnly,
             startEditable: !event.readOnly,
             durationEditable: false,
             extendedProps: event,
-          }),
-        );
+          };
+        });
         const linkedChildren = new Set(
           tasks.flatMap((task) => task.childUids ?? []),
         );
@@ -577,14 +663,16 @@ function CalendarApp({
             if (task.parentUid || linkedChildren.has(task.uid)) return [];
             const range = taskCalendarRange(task);
             if (!range) return [];
+            const color = colors.get(task.calendarId) ?? '#5b8def';
             return [
               {
                 id: `task-${task.id}`,
                 title: task.title,
                 ...range,
                 allDay: task.allDay,
-                backgroundColor: colors.get(task.calendarId),
-                borderColor: colors.get(task.calendarId),
+                backgroundColor: color,
+                borderColor: color,
+                textColor: entryTextColor(color),
                 editable: true,
                 startEditable: true,
                 durationEditable: false,
@@ -996,148 +1084,255 @@ function CalendarApp({
     wheelDistance.current = 0;
   }
 
+  function beginTouchNavigation(event: ReactTouchEvent<HTMLElement>) {
+    const touch = event.touches[0];
+    const target = event.target instanceof Element ? event.target : null;
+    if (
+      event.touches.length !== 1 ||
+      !touch ||
+      target?.closest(
+        'button, input, select, textarea, .fc-event, .fc-popover',
+      ) ||
+      isOnHorizontallyScrollableSurface(event.target, event.currentTarget)
+    ) {
+      touchStart.current = undefined;
+      return;
+    }
+    touchStart.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+      time: Date.now(),
+    };
+    clearTimeout(swipeReset.current);
+    event.currentTarget.classList.remove('is-swipe-settling');
+    event.currentTarget.classList.add('is-swipe-tracking');
+    event.currentTarget.style.setProperty('--calendar-swipe-x', '0px');
+  }
+
+  function moveTouchNavigation(event: ReactTouchEvent<HTMLElement>) {
+    const start = touchStart.current;
+    const touch = event.touches[0];
+    if (!start || !touch) return;
+    const horizontal = touch.clientX - start.x;
+    const vertical = touch.clientY - start.y;
+    if (Math.abs(horizontal) <= Math.abs(vertical) || Math.abs(horizontal) < 6)
+      return;
+    const offset = Math.max(-48, Math.min(48, horizontal * 0.24));
+    event.currentTarget.style.setProperty('--calendar-swipe-x', `${offset}px`);
+  }
+
+  function settleTouchNavigation(surface: HTMLElement) {
+    surface.classList.remove('is-swipe-tracking');
+    surface.classList.add('is-swipe-settling');
+    requestAnimationFrame(() =>
+      surface.style.setProperty('--calendar-swipe-x', '0px'),
+    );
+    clearTimeout(swipeReset.current);
+    swipeReset.current = setTimeout(
+      () => surface.classList.remove('is-swipe-settling'),
+      200,
+    );
+  }
+
+  async function toggleCalendarFullscreen() {
+    const surface = calendarMainRef.current;
+    if (!surface) return;
+    if (calendarFullscreen) {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else {
+        fullscreenFallback.current = false;
+        setCalendarFullscreen(false);
+      }
+      return;
+    }
+    if (surface.requestFullscreen) {
+      try {
+        await surface.requestFullscreen();
+        return;
+      } catch {
+        // Fall through to a CSS viewport mode on unsupported mobile browsers.
+      }
+    }
+    fullscreenFallback.current = true;
+    setCalendarFullscreen(true);
+  }
+
+  function finishTouchNavigation(event: ReactTouchEvent<HTMLElement>) {
+    const start = touchStart.current;
+    const touch = event.changedTouches[0];
+    touchStart.current = undefined;
+    if (!start || !touch || Date.now() - start.time > 700) {
+      settleTouchNavigation(event.currentTarget);
+      return;
+    }
+    const horizontal = touch.clientX - start.x;
+    const vertical = touch.clientY - start.y;
+    if (
+      Math.abs(horizontal) < 50 ||
+      Math.abs(horizontal) < Math.abs(vertical) * 1.25
+    ) {
+      settleTouchNavigation(event.currentTarget);
+      return;
+    }
+    const calendar = calendarRef.current?.getApi();
+    if (horizontal < 0) calendar?.next();
+    else calendar?.prev();
+    settleTouchNavigation(event.currentTarget);
+  }
+
   const sidebarVisible = sidebarSettings.enabled && sidebarOpen;
 
   return (
     <div className={`app-shell${sidebarVisible ? '' : ' sidebar-collapsed'}`}>
       {sidebarSettings.enabled && (
         <aside className="sidebar" id="sidebar" hidden={!sidebarOpen}>
-          {sidebarSettings.showBrand && (
-            <header className="brand">
-              <img
-                className="mark"
-                src="/dayfront-logo.png"
-                alt=""
-                aria-hidden="true"
-              />
-              <div>
-                <p className="eyebrow">
-                  Own your day.
-                  <br />
-                  Own your data.
-                </p>
-                <h1>DayFront</h1>
-              </div>
-            </header>
-          )}
+          <div className="sidebar-scroll-region">
+            {sidebarSettings.showBrand && (
+              <header className="brand">
+                <img
+                  className="mark"
+                  src="/dayfront-logo.png"
+                  alt=""
+                  aria-hidden="true"
+                />
+                <div>
+                  <p className="eyebrow">
+                    Own your day.
+                    <br />
+                    Own your data.
+                  </p>
+                  <h1>DayFront</h1>
+                </div>
+              </header>
+            )}
 
-          {sidebarSettings.showCalendars && (
-            <details
-              className="calendar-picker"
-              open={calendarPickerOpen}
-              onToggle={(event) =>
-                setCalendarPickerOpen(event.currentTarget.open)
-              }
-            >
-              <summary className="picker-summary">
-                <h2 id="calendar-heading">Calendars</h2>
-                {!loadingCalendars && (
-                  <span>
-                    {selected.size}/{calendars.length}
-                  </span>
-                )}
-              </summary>
-              {loadingCalendars && (
-                <p className="muted">Discovering calendars…</p>
-              )}
-              {!loadingCalendars && calendars.length === 0 && (
-                <p className="muted">No event calendars were found.</p>
-              )}
-              <div className="calendar-list">
-                {calendars.map((calendar, index) => (
-                  <label className="calendar-option" key={calendar.id}>
-                    <input
-                      type="checkbox"
-                      checked={selected.has(calendar.id)}
-                      onChange={() => toggleCalendar(calendar.id)}
-                    />
-                    <span
-                      className="calendar-color"
-                      style={{ backgroundColor: colorFor(calendar, index) }}
-                      aria-hidden="true"
-                    />
-                    <span>{calendar.displayName}</span>
-                    {calendar.readOnly && (
-                      <span
-                        className="calendar-readonly"
-                        aria-label="Read-only calendar"
-                        title="Read-only calendar"
-                      >
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
-                          <circle cx="12" cy="12" r="2.75" />
-                        </svg>
-                      </span>
-                    )}
-                  </label>
-                ))}
-              </div>
-              <button
-                type="button"
-                className="manage-calendars-button"
-                onClick={() => setCalendarManagerOpen(true)}
+            {sidebarSettings.showCalendars && (
+              <details
+                className="calendar-picker"
+                open={calendarPickerOpen}
+                onToggle={(event) =>
+                  setCalendarPickerOpen(event.currentTarget.open)
+                }
               >
-                Manage calendars
-              </button>
-            </details>
-          )}
-          {sidebarSettings.showTasks && (
-            <details
-              className="task-list"
-              open={taskPickerOpen}
-              onToggle={(event) => setTaskPickerOpen(event.currentTarget.open)}
-            >
-              <summary className="picker-summary">
-                <h2 id="task-list-heading">Tasks</h2>
-              </summary>
-              <div className="task-actions">
+                <summary className="picker-summary">
+                  <h2 id="calendar-heading">Calendars</h2>
+                  {!loadingCalendars && (
+                    <span>
+                      {selected.size}/{calendars.length}
+                    </span>
+                  )}
+                </summary>
+                {loadingCalendars && (
+                  <p className="muted">Discovering calendars…</p>
+                )}
+                {!loadingCalendars && calendars.length === 0 && (
+                  <p className="muted">No event calendars were found.</p>
+                )}
+                <div className="calendar-list">
+                  {calendars.map((calendar, index) => (
+                    <label className="calendar-option" key={calendar.id}>
+                      <input
+                        type="checkbox"
+                        checked={selected.has(calendar.id)}
+                        onChange={() => toggleCalendar(calendar.id)}
+                      />
+                      <span
+                        className="calendar-color"
+                        style={{ backgroundColor: colorFor(calendar, index) }}
+                        aria-hidden="true"
+                      />
+                      <span>{calendar.displayName}</span>
+                      {calendar.readOnly && (
+                        <span
+                          className="calendar-readonly"
+                          aria-label="Read-only calendar"
+                          title="Read-only calendar"
+                        >
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+                            <circle cx="12" cy="12" r="2.75" />
+                          </svg>
+                        </span>
+                      )}
+                    </label>
+                  ))}
+                </div>
                 <button
                   type="button"
-                  className="task-action primary-task-action"
-                  onClick={() => {
-                    setTaskInitialDate(undefined);
-                    setTaskEditorReturn(undefined);
-                    setTaskEditor(null);
-                  }}
+                  className="manage-calendars-button"
+                  onClick={() => setCalendarManagerOpen(true)}
                 >
-                  <span aria-hidden="true">＋</span>
-                  New task
+                  Manage calendars
                 </button>
-                {completedTasks.length > 0 && (
+              </details>
+            )}
+            {sidebarSettings.showTasks && (
+              <details
+                className="task-list"
+                open={taskPickerOpen}
+                onToggle={(event) =>
+                  setTaskPickerOpen(event.currentTarget.open)
+                }
+              >
+                <summary className="picker-summary">
+                  <h2 id="task-list-heading">Tasks</h2>
+                </summary>
+                <div className="task-actions">
                   <button
                     type="button"
-                    className="task-action clear-task-action"
-                    disabled={deletingCompleted}
-                    onClick={() => void removeCompletedTasks()}
-                  >
-                    <span aria-hidden="true">×</span>
-                    {deletingCompleted ? 'Deleting…' : 'Clear completed'}
-                  </button>
-                )}
-              </div>
-              {loadingTasks ? (
-                <p className="muted">Loading tasks…</p>
-              ) : (
-                Object.entries(taskGroups).map(([title, items]) => (
-                  <TaskGroup
-                    title={title}
-                    tasks={items}
-                    childrenByUid={hierarchy.childrenByUid}
-                    updatingIds={updatingTaskIds}
-                    onToggle={(task, completed) =>
-                      void toggleSubtask(task, completed)
-                    }
-                    onSelect={(task) => {
+                    className="task-action primary-task-action"
+                    onClick={() => {
                       setTaskInitialDate(undefined);
                       setTaskEditorReturn(undefined);
-                      setTaskEditor(task);
+                      setTaskEditor(null);
                     }}
-                    key={title}
-                  />
-                ))
-              )}
-            </details>
-          )}
+                  >
+                    <span aria-hidden="true">＋</span>
+                    New task
+                  </button>
+                  {completedTasks.length > 0 && (
+                    <button
+                      type="button"
+                      className="task-action clear-task-action"
+                      aria-label="Clear completed"
+                      disabled={deletingCompleted}
+                      onClick={() => void removeCompletedTasks()}
+                    >
+                      <svg
+                        className="task-action-icon"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path d="M8.5 4.5h7M5.5 7.5h13M9 7.5v11m6-11v11M7 7.5l.7 12h8.6l.7-12M10 4.5l.5-1h3l.5 1" />
+                      </svg>
+                      {deletingCompleted ? 'Deleting…' : 'Completed'}
+                    </button>
+                  )}
+                </div>
+                {loadingTasks ? (
+                  <p className="muted">Loading tasks…</p>
+                ) : (
+                  Object.entries(taskGroups).map(([title, items]) => (
+                    <TaskGroup
+                      title={title}
+                      tasks={items}
+                      childrenByUid={hierarchy.childrenByUid}
+                      updatingIds={updatingTaskIds}
+                      onToggle={(task, completed) =>
+                        void toggleSubtask(task, completed)
+                      }
+                      onSelect={(task) => {
+                        setTaskInitialDate(undefined);
+                        setTaskEditorReturn(undefined);
+                        setTaskEditor(task);
+                      }}
+                      key={title}
+                    />
+                  ))
+                )}
+              </details>
+            )}
+          </div>
           {onLogout && (
             <div className="account-menu">
               <span title={username}>{username}</span>
@@ -1149,7 +1344,18 @@ function CalendarApp({
         </aside>
       )}
 
-      <main className="calendar-main" onWheel={navigateWithWheel}>
+      <main
+        className={`calendar-main${calendarControlsOpen ? ' calendar-controls-open' : ''}${calendarFullscreen ? ' calendar-is-fullscreen' : ''}`}
+        ref={calendarMainRef}
+        onWheel={navigateWithWheel}
+        onTouchStart={beginTouchNavigation}
+        onTouchMove={moveTouchNavigation}
+        onTouchEnd={finishTouchNavigation}
+        onTouchCancel={(event) => {
+          touchStart.current = undefined;
+          settleTouchNavigation(event.currentTarget);
+        }}
+      >
         {error && (
           <div className="error-banner" role="alert">
             {error}
@@ -1172,6 +1378,20 @@ function CalendarApp({
           ]}
           initialView="dayGridMonth"
           customButtons={{
+            fullScreen: {
+              text: '',
+              hint: calendarFullscreen
+                ? 'Exit fullscreen calendar'
+                : 'Open fullscreen calendar',
+              click: () => void toggleCalendarFullscreen(),
+            },
+            compactMenu: {
+              text: '☰',
+              hint: calendarControlsOpen
+                ? 'Hide calendar controls'
+                : 'Show calendar controls',
+              click: () => setCalendarControlsOpen((open) => !open),
+            },
             sidebarToggle: {
               text: sidebarOpen ? 'Hide sidebar' : 'Show sidebar',
               hint: sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar',
@@ -1185,12 +1405,13 @@ function CalendarApp({
           }}
           headerToolbar={{
             left: sidebarSettings.enabled
-              ? 'sidebarToggle prev,next today'
-              : 'prev,next today',
+              ? 'fullScreen compactMenu sidebarToggle prev,next today'
+              : 'fullScreen compactMenu prev,next today',
             center: 'title',
             right: `dayGridMonth,timeGridWeek,timeGridDay,listMonth${onLogout && !sidebarVisible ? ' signOut' : ''}`,
           }}
           buttonText={{
+            today: 'Today',
             month: 'Month',
             week: 'Week',
             day: 'Day',
@@ -1228,7 +1449,7 @@ function CalendarApp({
           eventDrop={(info) => void moveCalendarEntry(info)}
           height="100%"
           nowIndicator
-          dayMaxEvents
+          dayMaxEvents={responsiveDayMaxEvents}
           eventDisplay="block"
           selectable
           dateClick={(info) => setCreationDate(info.dateStr)}

@@ -11,7 +11,19 @@
 
 _Own your day. Own your data._
 
-![DayFront month view with CalDAV calendars, events, and tasks](docs/images/dayfront-calendar.png)
+<p align="center">
+  <a href="https://buymeacoffee.com/maplepotion">
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="42" alt="Support DayFront on Buy Me a Coffee" />
+  </a>
+</p>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/Dark%20Theme/Calendar-Main.png" />
+    <source media="(prefers-color-scheme: light)" srcset="docs/images/Light%20Theme/Calendar-Main.png" />
+    <img src="docs/images/Light%20Theme/Calendar-Main.png" alt="DayFront calendar in month view" width="1100" />
+  </picture>
+</p>
 
 DayFront is a modern, self-hosted web interface for calendars and tasks stored on an existing CalDAV server.
 
@@ -33,6 +45,58 @@ DayFront uses standard CalDAV and WebDAV discovery and connects to standards-com
 - Docker, Compose, and Unraid deployment support
 
 CalDAV implementations vary in optional features and edge-case behavior. Compatibility reports and fixes for different servers are welcome.
+
+## Screenshots
+
+### Light theme
+
+<table>
+  <thead>
+    <tr>
+      <th>Calendar</th>
+      <th>Calendar and tasks</th>
+      <th>Login</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <img src="docs/images/Light%20Theme/Calendar-Main.png" alt="DayFront light theme calendar in month view" width="420" />
+      </td>
+      <td>
+        <img src="docs/images/Light%20Theme/Calendar%2BSidebar-Main.png" alt="DayFront light theme calendar with the calendar and task sidebar open" width="420" />
+      </td>
+      <td>
+        <img src="docs/images/Light%20Theme/Login-Page.png" alt="DayFront light theme CalDAV login page" width="420" />
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+### Dark theme
+
+<table>
+  <thead>
+    <tr>
+      <th>Calendar</th>
+      <th>Calendar and tasks</th>
+      <th>Login</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <img src="docs/images/Dark%20Theme/Calendar-Main.png" alt="DayFront dark theme calendar in month view" width="420" />
+      </td>
+      <td>
+        <img src="docs/images/Dark%20Theme/Calendar%2BSidebar-Main.png" alt="DayFront dark theme calendar with the calendar and task sidebar open" width="420" />
+      </td>
+      <td>
+        <img src="docs/images/Dark%20Theme/Login-Page.png" alt="DayFront dark theme CalDAV login page" width="420" />
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ## Security boundary
 
