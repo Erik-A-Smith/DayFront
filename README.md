@@ -42,29 +42,40 @@ CalDAV implementations vary in optional features and edge-case behavior. Compati
 
 ## Screenshots
 
-<details>
-  <summary><strong>Calendar and task sidebar</strong></summary>
-  <br />
-  <p align="center">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="docs/images/Dark%20Theme/Calendar%2BSidebar-Main.png" />
-      <source media="(prefers-color-scheme: light)" srcset="docs/images/Light%20Theme/Calendar%2BSidebar-Main.png" />
-      <img src="docs/images/Light%20Theme/Calendar%2BSidebar-Main.png" alt="DayFront calendar with the calendar and task sidebar open" width="1100" />
-    </picture>
-  </p>
-</details>
-
-<details>
-  <summary><strong>Login</strong></summary>
-  <br />
-  <p align="center">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="docs/images/Dark%20Theme/Login-Page.png" />
-      <source media="(prefers-color-scheme: light)" srcset="docs/images/Light%20Theme/Login-Page.png" />
-      <img src="docs/images/Light%20Theme/Login-Page.png" alt="DayFront CalDAV login page" width="1100" />
-    </picture>
-  </p>
-</details>
+<table>
+  <thead>
+    <tr>
+      <th>Calendar</th>
+      <th>Calendar and tasks</th>
+      <th>Login</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="docs/images/Dark%20Theme/Calendar-Main.png" />
+          <source media="(prefers-color-scheme: light)" srcset="docs/images/Light%20Theme/Calendar-Main.png" />
+          <img src="docs/images/Light%20Theme/Calendar-Main.png" alt="DayFront calendar in month view" width="420" />
+        </picture>
+      </td>
+      <td>
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="docs/images/Dark%20Theme/Calendar%2BSidebar-Main.png" />
+          <source media="(prefers-color-scheme: light)" srcset="docs/images/Light%20Theme/Calendar%2BSidebar-Main.png" />
+          <img src="docs/images/Light%20Theme/Calendar%2BSidebar-Main.png" alt="DayFront calendar with the calendar and task sidebar open" width="420" />
+        </picture>
+      </td>
+      <td>
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="docs/images/Dark%20Theme/Login-Page.png" />
+          <source media="(prefers-color-scheme: light)" srcset="docs/images/Light%20Theme/Login-Page.png" />
+          <img src="docs/images/Light%20Theme/Login-Page.png" alt="DayFront CalDAV login page" width="420" />
+        </picture>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ## Security boundary
 
