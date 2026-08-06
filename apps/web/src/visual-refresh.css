@@ -554,6 +554,176 @@ label,
   color: var(--accent);
 }
 
+.fc .fc-compactMenu-button {
+  display: none;
+}
+
+.fc .fc-fullScreen-button {
+  position: relative;
+  display: inline-grid;
+  width: 2.45rem;
+  padding: 0;
+  border-color: var(--line-strong);
+  color: var(--text-soft);
+  place-items: center;
+}
+
+.fc .fc-fullScreen-button::before {
+  width: 1.05rem;
+  height: 1.05rem;
+  background: currentcolor;
+  content: '';
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M9 4H4v5m11-5h5v5M9 20H4v-5m11 5h5v-5'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M9 4H4v5m11-5h5v5M9 20H4v-5m11 5h5v-5'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+
+.calendar-is-fullscreen .fc .fc-fullScreen-button::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M9 4v5H4m11-5v5h5M9 20v-5H4m11 5v-5h5'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M9 4v5H4m11-5v5h5M9 20v-5H4m11 5v-5h5'/%3E%3C/svg%3E");
+}
+
+@container (max-width: 68rem) {
+  .fc .fc-header-toolbar {
+    position: relative;
+    grid-template-columns: minmax(0, 1fr);
+    padding-right: 6rem;
+  }
+
+  .fc .fc-header-toolbar > .fc-toolbar-chunk:nth-child(2) {
+    grid-row: 1;
+    grid-column: 1;
+    justify-self: start;
+    text-align: left;
+  }
+
+  .fc .fc-header-toolbar > .fc-toolbar-chunk:first-child {
+    display: flex;
+    grid-row: 2;
+    grid-column: 1;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .fc
+    .fc-header-toolbar
+    > .fc-toolbar-chunk:first-child
+    > :not(.fc-compactMenu-button):not(.fc-fullScreen-button),
+  .fc .fc-header-toolbar > .fc-toolbar-chunk:last-child {
+    display: none;
+  }
+
+  .calendar-main:not(.calendar-controls-open)
+    .fc
+    .fc-header-toolbar
+    > .fc-toolbar-chunk:first-child {
+    display: contents;
+  }
+
+  .fc .fc-compactMenu-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: inline-grid;
+    width: 2.45rem;
+    padding: 0;
+    border-color: var(--line-strong);
+    color: var(--accent);
+    font-size: 0;
+    line-height: 1;
+    place-items: center;
+  }
+
+  .fc .fc-compactMenu-button::before {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1rem;
+    height: 1.5px;
+    border-radius: 999px;
+    background: currentcolor;
+    box-shadow:
+      0 -0.3rem currentcolor,
+      0 0.3rem currentcolor;
+    content: '';
+    transform: translate(-50%, -50%);
+  }
+
+  .fc .fc-fullScreen-button {
+    position: absolute;
+    top: 0;
+    right: 3rem;
+  }
+
+  .calendar-controls-open .fc .fc-header-toolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding-bottom: 0.15rem;
+  }
+
+  .calendar-controls-open
+    .fc
+    .fc-header-toolbar
+    > .fc-toolbar-chunk:nth-child(2) {
+    grid-column: 1 / -1;
+  }
+
+  .calendar-controls-open
+    .fc
+    .fc-header-toolbar
+    > .fc-toolbar-chunk:first-child
+    > :not(.fc-compactMenu-button):not(.fc-fullScreen-button) {
+    display: inline-flex;
+  }
+
+  .calendar-controls-open
+    .fc
+    .fc-header-toolbar
+    > .fc-toolbar-chunk:last-child {
+    display: flex;
+    grid-row: 2;
+    grid-column: 2;
+    justify-self: end;
+  }
+}
+
+@container (max-width: 48rem) {
+  .calendar-controls-open .fc .fc-header-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .calendar-controls-open
+    .fc
+    .fc-header-toolbar
+    > .fc-toolbar-chunk:last-child {
+    grid-row: 3;
+    grid-column: 1;
+    justify-self: start;
+  }
+}
+
+.calendar-main.calendar-is-fullscreen {
+  z-index: 100;
+  width: 100vw;
+  height: 100dvh;
+  padding: 0.5rem;
+  background: var(--canvas);
+}
+
+.calendar-main.calendar-is-fullscreen:not(:fullscreen) {
+  position: fixed;
+  inset: 0;
+}
+
+.calendar-main:fullscreen {
+  overflow: auto;
+}
+
+.calendar-main.calendar-is-fullscreen .fc {
+  min-height: calc(100dvh - 1rem);
+}
+
 .fc .fc-scrollgrid {
   overflow: hidden;
   border-radius: 0.85rem;

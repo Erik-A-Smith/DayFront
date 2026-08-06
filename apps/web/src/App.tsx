@@ -445,6 +445,7 @@ function CalendarApp({
   const swipeReset = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
+  const fullscreenFallback = useRef(false);
   const [calendars, setCalendars] = useState<Calendar[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string>();
@@ -460,6 +461,8 @@ function CalendarApp({
   const [taskInitialDate, setTaskInitialDate] = useState<string>();
   const [creationDate, setCreationDate] = useState<string>();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [calendarControlsOpen, setCalendarControlsOpen] = useState(false);
+  const [calendarFullscreen, setCalendarFullscreen] = useState(false);
   const [sidebarSettings, setSidebarSettings] = useState(
     defaultSidebarSettings,
   );
@@ -490,6 +493,25 @@ function CalendarApp({
     });
     observer.observe(surface);
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const button = calendarMainRef.current?.querySelector<HTMLButtonElement>(
+      '.fc-compactMenu-button',
+    );
+    button?.setAttribute('aria-expanded', String(calendarControlsOpen));
+  }, [calendarControlsOpen]);
+
+  useEffect(() => {
+    const syncFullscreenState = () => {
+      if (!fullscreenFallback.current)
+        setCalendarFullscreen(
+          document.fullscreenElement === calendarMainRef.current,
+        );
+    };
+    document.addEventListener('fullscreenchange', syncFullscreenState);
+    return () =>
+      document.removeEventListener('fullscreenchange', syncFullscreenState);
   }, []);
 
   useEffect(() => {
@@ -1112,6 +1134,29 @@ function CalendarApp({
     );
   }
 
+  async function toggleCalendarFullscreen() {
+    const surface = calendarMainRef.current;
+    if (!surface) return;
+    if (calendarFullscreen) {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else {
+        fullscreenFallback.current = false;
+        setCalendarFullscreen(false);
+      }
+      return;
+    }
+    if (surface.requestFullscreen) {
+      try {
+        await surface.requestFullscreen();
+        return;
+      } catch {
+        // Fall through to a CSS viewport mode on unsupported mobile browsers.
+      }
+    }
+    fullscreenFallback.current = true;
+    setCalendarFullscreen(true);
+  }
+
   function finishTouchNavigation(event: ReactTouchEvent<HTMLElement>) {
     const start = touchStart.current;
     const touch = event.changedTouches[0];
@@ -1300,7 +1345,7 @@ function CalendarApp({
       )}
 
       <main
-        className="calendar-main"
+        className={`calendar-main${calendarControlsOpen ? ' calendar-controls-open' : ''}${calendarFullscreen ? ' calendar-is-fullscreen' : ''}`}
         ref={calendarMainRef}
         onWheel={navigateWithWheel}
         onTouchStart={beginTouchNavigation}
@@ -1333,6 +1378,20 @@ function CalendarApp({
           ]}
           initialView="dayGridMonth"
           customButtons={{
+            fullScreen: {
+              text: '',
+              hint: calendarFullscreen
+                ? 'Exit fullscreen calendar'
+                : 'Open fullscreen calendar',
+              click: () => void toggleCalendarFullscreen(),
+            },
+            compactMenu: {
+              text: '☰',
+              hint: calendarControlsOpen
+                ? 'Hide calendar controls'
+                : 'Show calendar controls',
+              click: () => setCalendarControlsOpen((open) => !open),
+            },
             sidebarToggle: {
               text: sidebarOpen ? 'Hide sidebar' : 'Show sidebar',
               hint: sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar',
@@ -1346,8 +1405,8 @@ function CalendarApp({
           }}
           headerToolbar={{
             left: sidebarSettings.enabled
-              ? 'sidebarToggle prev,next today'
-              : 'prev,next today',
+              ? 'fullScreen compactMenu sidebarToggle prev,next today'
+              : 'fullScreen compactMenu prev,next today',
             center: 'title',
             right: `dayGridMonth,timeGridWeek,timeGridDay,listMonth${onLogout && !sidebarVisible ? ' signOut' : ''}`,
           }}
