@@ -303,12 +303,12 @@ export function calendarRouter(
 
   router.get('/events/search', async (request, response) => {
     const query =
-      typeof request.query.q === 'string' ? request.query.q.trim() : '';
-    if (query.length < 2 || query.length > 200)
+      typeof request.query.q === 'string' ? request.query.q.trim() : undefined;
+    if (query && query.length > 200)
       throw new ApiError(
         400,
         'VALIDATION_FAILED',
-        'q must contain between 2 and 200 characters.',
+        'q must contain no more than 200 characters.',
       );
     const ids = selectedIds(request.query.calendarId);
     try {

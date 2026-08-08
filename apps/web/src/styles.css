@@ -1357,9 +1357,23 @@ input[type='checkbox']:disabled {
   font-size: 0.82rem;
 }
 
-.fc .fc-search-button::before {
-  content: '⌕';
-  font-size: 1.25rem;
+.fc .fc-search-button {
+  display: inline-grid;
+  width: 2.45rem;
+  padding: 0;
+  place-items: center;
+}
+.fc .fc-search-button::before,
+.search-input-icon {
+  display: block;
+  width: 1.05rem;
+  height: 1.05rem;
+  background: currentcolor;
+  content: '';
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='m16.5 16.5 4 4' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='m16.5 16.5 4 4' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E")
+    center / contain no-repeat;
 }
 .search-backdrop {
   position: fixed;
@@ -1422,8 +1436,18 @@ input[type='checkbox']:disabled {
   text-align: left;
 }
 .search-results > button:hover,
-.search-results > button:focus-visible {
+.search-results > button:focus-visible,
+.search-results > button.is-active {
   background: var(--panel-soft);
+}
+.search-fuzzy-option {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.85rem;
 }
 .search-results span,
 .search-results p {

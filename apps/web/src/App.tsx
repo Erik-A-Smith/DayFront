@@ -7,6 +7,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type TouchEvent as ReactTouchEvent,
@@ -51,6 +52,7 @@ import { CalendarManager } from './CalendarManager.js';
 import { taskCalendarRange } from './calendar-display.js';
 import { TaskDialog } from './TaskDialog.js';
 import { LoginPage } from './LoginPage.js';
+import { fuzzyTitleMatch } from './search.js';
 
 const entrySymbols = {
   event: { symbol: '◆', label: 'Event' },
@@ -432,7 +434,7 @@ function EntryTypeDialog({
   );
 }
 
-function SearchOverlay({
+export function SearchOverlay({
   calendarIds,
   onClose,
   onSelect,
@@ -442,26 +444,48 @@ function SearchOverlay({
   onSelect: (event: CalendarEvent) => void;
 }) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<CalendarEvent[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [index, setIndex] = useState<CalendarEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [fuzzy, setFuzzy] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
   useEffect(() => {
-    if (query.trim().length < 2) return;
     const controller = new AbortController();
-    const timer = window.setTimeout(() => {
-      setLoading(true);
-      void searchEvents(query.trim(), calendarIds, controller.signal)
-        .then(setResults)
-        .catch((error: unknown) => {
-          if (!(error instanceof DOMException && error.name === 'AbortError'))
-            setResults([]);
-        })
-        .finally(() => !controller.signal.aborted && setLoading(false));
-    }, 200);
+    void searchEvents(undefined, calendarIds, controller.signal)
+      .then(setIndex)
+      .catch((error: unknown) => {
+        if (!(error instanceof DOMException && error.name === 'AbortError'))
+          setIndex([]);
+      })
+      .finally(() => !controller.signal.aborted && setLoading(false));
     return () => {
-      window.clearTimeout(timer);
       controller.abort();
     };
-  }, [calendarIds, query]);
+  }, [calendarIds]);
+  const results = useMemo(() => {
+    const needle = query.trim().toLocaleLowerCase();
+    if (needle.length < 2) return [];
+    return index.filter((event) => {
+      const title = event.title.toLocaleLowerCase();
+      if (title.includes(needle)) return true;
+      return fuzzy && fuzzyTitleMatch(title, needle);
+    });
+  }, [fuzzy, index, query]);
+  function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === 'Escape') return onClose();
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      const direction = event.key === 'ArrowDown' ? 1 : -1;
+      setActiveIndex((current) =>
+        results.length
+          ? (current + direction + results.length) % results.length
+          : 0,
+      );
+    }
+    if (event.key === 'Enter' && results[activeIndex]) {
+      event.preventDefault();
+      onSelect(results[activeIndex]);
+    }
+  }
   return (
     <div className="search-backdrop" role="presentation" onMouseDown={onClose}>
       <section
@@ -472,19 +496,16 @@ function SearchOverlay({
         onMouseDown={(event) => event.stopPropagation()}
       >
         <div className="search-input-row">
-          <span aria-hidden="true">⌕</span>
+          <span className="search-input-icon" aria-hidden="true" />
           <input
             autoFocus
             type="search"
             value={query}
             onChange={(event) => {
-              const value = event.target.value;
-              setQuery(value);
-              if (value.trim().length < 2) {
-                setResults([]);
-                setLoading(false);
-              }
+              setQuery(event.target.value);
+              setActiveIndex(0);
             }}
+            onKeyDown={handleKeyDown}
             placeholder="Search events…"
             aria-label="Search events"
           />
@@ -492,15 +513,30 @@ function SearchOverlay({
             ×
           </button>
         </div>
+        <label className="search-fuzzy-option">
+          <input
+            type="checkbox"
+            checked={fuzzy}
+            onChange={(event) => {
+              setFuzzy(event.target.checked);
+              setActiveIndex(0);
+            }}
+          />
+          Fuzzy matching
+        </label>
         <div className="search-results" aria-live="polite">
           {loading ? (
             <p>Searching…</p>
           ) : (
-            results.map((event) => (
+            results.map((event, resultIndex) => (
               <button
                 type="button"
                 key={`${event.resourceId}-${event.start}`}
                 onClick={() => onSelect(event)}
+                className={
+                  resultIndex === activeIndex ? 'is-active' : undefined
+                }
+                onMouseEnter={() => setActiveIndex(resultIndex)}
               >
                 <strong>{event.title}</strong>
                 <span>{event.start.slice(0, 10)}</span>

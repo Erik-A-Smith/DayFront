@@ -109,11 +109,11 @@ export async function getCalendars(signal?: AbortSignal): Promise<Calendar[]> {
 }
 
 export async function searchEvents(
-  query: string,
+  query: string | undefined,
   calendarIds: string[],
   signal?: AbortSignal,
 ): Promise<CalendarEvent[]> {
-  const parameters = new URLSearchParams({ q: query });
+  const parameters = new URLSearchParams(query ? { q: query } : {});
   calendarIds.forEach((id) => parameters.append('calendarId', id));
   const response = await fetch(
     `/api/v1/events/search?${parameters}`,

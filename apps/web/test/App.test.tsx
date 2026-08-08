@@ -8,18 +8,80 @@ import {
 } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { App } from '../src/App.js';
+import { App, SearchOverlay } from '../src/App.js';
 import { taskCalendarRange } from '../src/calendar-display.js';
 import { CalendarManager } from '../src/CalendarManager.js';
 import { ClockInput } from '../src/ClockInput.js';
 import { EventDialog } from '../src/EventDialog.js';
 import { TaskDialog } from '../src/TaskDialog.js';
+import { fuzzyTitleMatch } from '../src/search.js';
 
 describe('DayFront calendar', () => {
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
     window.history.replaceState(null, '', '/');
+  });
+
+  it('supports fuzzy event matching and keyboard search selection', async () => {
+    expect(fuzzyTitleMatch('payday', 'paydy')).toBe(true);
+    expect(fuzzyTitleMatch('vacation', 'paydy')).toBe(false);
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          data: [
+            {
+              id: '1',
+              resourceId: 'one',
+              calendarId: 'personal',
+              uid: '1',
+              title: 'Payday',
+              start: '2026-08-06',
+              allDay: true,
+              version: 'v1',
+              entryType: 'event',
+              recurring: true,
+            },
+            {
+              id: '2',
+              resourceId: 'two',
+              calendarId: 'personal',
+              uid: '2',
+              title: 'Payday review',
+              start: '2026-08-13',
+              allDay: true,
+              version: 'v1',
+              entryType: 'event',
+              recurring: false,
+            },
+          ],
+          meta: { requestId: 'search-test' },
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      ),
+    );
+    const onSelect = vi.fn();
+    render(
+      <SearchOverlay
+        calendarIds={['personal']}
+        onClose={() => undefined}
+        onSelect={onSelect}
+      />,
+    );
+    await waitFor(() =>
+      expect(screen.queryByText('Searching…')).not.toBeInTheDocument(),
+    );
+    const input = screen.getByRole('searchbox', { name: 'Search events' });
+    fireEvent.change(input, { target: { value: 'paydy' } });
+    expect(screen.getByText('No events found.')).toBeVisible();
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Fuzzy matching' }));
+    expect(screen.getByText('Payday')).toBeVisible();
+    fireEvent.change(input, { target: { value: 'payday' } });
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(onSelect).toHaveBeenCalledWith(
+      expect.objectContaining({ resourceId: 'two' }),
+    );
   });
 
   it('formats and selects time using a 24-hour clock', () => {
