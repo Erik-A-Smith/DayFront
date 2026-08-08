@@ -27,6 +27,8 @@ describe('task editing', () => {
     expect(source).toContain('DUE;VALUE=DATE:20260805');
     expect(source).toContain('PRIORITY:1');
     expect(source).toContain('RRULE:FREQ=WEEKLY');
+    expect(source).toMatch(/DTSTAMP:\d{8}T\d{6}Z/);
+    expect(source).not.toContain('X-VOBJ-FLOATINGTIME-ALLOWED');
   });
 
   it('anchors a due-only recurring task at its due date', () => {

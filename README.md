@@ -38,13 +38,15 @@ DayFront uses standard CalDAV and WebDAV discovery and connects to standards-com
 - Create, edit, and safely delete CalDAV calendars
 - Toggleable, read-only external iCalendar (`.ics`) subscriptions
 - Timed, all-day, multi-day, and recurring events
+- Fast event search with optional fuzzy matching and keyboard navigation
+- Multi-day selection that pre-fills event and task date ranges
 - Series and single-occurrence recurrence editing
 - Dated and undated CalDAV tasks
-- Recurring tasks, subtasks, priorities, and completion workflows
+- Recurring tasks, subtasks, priorities, completion workflows, and a focused task sidebar
 - Light and dark themes
 - Docker, Compose, and Unraid deployment support
 
-CalDAV implementations vary in optional features and edge-case behavior. Compatibility reports and fixes for different servers are welcome.
+CalDAV implementations vary in optional features and edge-case behavior. DayFront writes explicit weekdays for weekly all-day recurrences and UTC metadata timestamps for reliable synchronization with Android clients and calendar widgets. Compatibility reports and fixes for different servers are welcome.
 
 ## Screenshots
 

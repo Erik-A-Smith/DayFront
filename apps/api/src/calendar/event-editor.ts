@@ -19,14 +19,23 @@ function time(value: string, allDay: boolean): ICAL.Time {
 
 const weekDays = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'] as const;
 
+function utcNow(): ICAL.Time {
+  return ICAL.Time.fromJSDate(new Date(), true);
+}
+
 function recurrenceRule(input: EventMutation): string | undefined {
   if (typeof input.recurrenceRule !== 'string') return undefined;
-  if (!input.allDay || input.recurrenceRule.toUpperCase() !== 'FREQ=WEEKLY')
+  const rule = input.recurrenceRule.toUpperCase();
+  if (
+    !input.allDay ||
+    !/(^|;)FREQ=WEEKLY(;|$)/.test(rule) ||
+    /(^|;)BYDAY=/.test(rule)
+  )
     return input.recurrenceRule;
 
   const date = new Date(`${input.start.slice(0, 10)}T00:00:00Z`);
   if (Number.isNaN(date.getTime())) return input.recurrenceRule;
-  return `FREQ=WEEKLY;BYDAY=${weekDays[date.getUTCDay()]}`;
+  return `${input.recurrenceRule};BYDAY=${weekDays[date.getUTCDay()]}`;
 }
 
 function apply(event: ICAL.Event, input: EventMutation): void {
@@ -55,7 +64,9 @@ function apply(event: ICAL.Event, input: EventMutation): void {
   } else if (input.recurrenceRule === null) {
     event.component.removeAllProperties('rrule');
   }
-  event.component.updatePropertyWithValue('dtstamp', ICAL.Time.now());
+  if (!event.component.hasProperty('status'))
+    event.component.updatePropertyWithValue('status', 'CONFIRMED');
+  event.component.updatePropertyWithValue('dtstamp', utcNow());
 }
 
 function parsedCalendar(source: string): ICAL.Component {
@@ -192,7 +203,7 @@ export function deleteOccurrenceData(
       }
     }
     master.component.addPropertyWithValue('exdate', id);
-    master.component.updatePropertyWithValue('dtstamp', ICAL.Time.now());
+    master.component.updatePropertyWithValue('dtstamp', utcNow());
     return calendar.toString();
   } catch (error: unknown) {
     if (error instanceof CalDavError) throw error;

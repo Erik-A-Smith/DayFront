@@ -31,6 +31,9 @@ describe('event editing', () => {
 
     expect(source).toContain('SUMMARY:Updated title');
     expect(source).toContain('LOCATION:Toronto');
+    expect(source).toContain('STATUS:CONFIRMED');
+    expect(source).toMatch(/DTSTAMP:\d{8}T\d{6}Z/);
+    expect(source).not.toContain('X-VOBJ-FLOATINGTIME-ALLOWED');
     expect(source).toContain('UID:');
     expect(() => ICalendarDocument.parse(source)).not.toThrow();
   });
@@ -92,7 +95,7 @@ describe('event editing', () => {
     ]);
   });
 
-  it('does not rewrite custom weekly recurrence rules', () => {
+  it('adds an explicit weekday to custom weekly rules that omit BYDAY', () => {
     const source = createEventData({
       ...input,
       start: '2026-08-06',
@@ -101,7 +104,20 @@ describe('event editing', () => {
       recurrenceRule: 'FREQ=WEEKLY;INTERVAL=2',
     });
 
-    expect(source).toContain('RRULE:FREQ=WEEKLY;INTERVAL=2');
+    expect(source).toContain('RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=TH');
+  });
+
+  it('preserves explicitly selected weekdays in custom weekly rules', () => {
+    const source = createEventData({
+      ...input,
+      start: '2026-08-06',
+      end: '2026-08-07',
+      allDay: true,
+      recurrenceRule: 'FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE',
+    });
+
+    expect(source).toContain('RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE');
+    expect(source).not.toContain('BYDAY=TH');
   });
 
   it('updates fields while preserving recurrence and extension properties', () => {
@@ -110,6 +126,20 @@ describe('event editing', () => {
     expect(source).toContain('SUMMARY:Updated title');
     expect(source).toContain('RRULE:FREQ=WEEKLY;COUNT=3');
     expect(source).toContain('X-CUSTOM-PROPERTY:custom-value');
+  });
+
+  it('preserves an existing event status while refreshing DTSTAMP in UTC', () => {
+    const source = updateEventData(
+      fixture.replace(
+        'SUMMARY:Fixture event',
+        'STATUS:TENTATIVE\nSUMMARY:Fixture event',
+      ),
+      input,
+    );
+
+    expect(source).toContain('STATUS:TENTATIVE');
+    expect(source).not.toContain('STATUS:CONFIRMED');
+    expect(source).toMatch(/DTSTAMP:\d{8}T\d{6}Z/);
   });
 
   it('creates multi-day all-day events with exclusive date ends', () => {

@@ -4,6 +4,15 @@ All notable changes to DayFront are documented here.
 
 ## Unreleased
 
+## 1.4.0 - 2026-08-08
+
+- Add event search with optional fuzzy matching, calendar color indicators, keyboard navigation, and direct calendar highlighting
+- Let multi-day calendar selections pre-fill event and task date ranges
+- Redesign the task sidebar with clearer grouping, progress, hierarchy, and metadata
+- Prompt for occurrence or series scope when saving or deleting recurring events and tasks
+- Make implicit weekdays explicit in custom weekly all-day recurrence rules for reliable Android calendar and widget expansion
+- Write event and task metadata timestamps in UTC and add a confirmed status to new events for broader CalDAV interoperability
+
 ## 1.3.1 - 2026-08-08
 
 - Make weekdays explicit in simple weekly all-day recurrence rules for reliable Android calendar and widget expansion

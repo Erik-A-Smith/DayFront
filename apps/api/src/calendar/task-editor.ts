@@ -5,6 +5,10 @@ import ICAL from 'ical.js';
 
 import { CalDavError } from '../caldav/errors.js';
 
+function utcNow(): ICAL.Time {
+  return ICAL.Time.fromJSDate(new Date(), true);
+}
+
 function taskTime(value: string, allDay: boolean): ICAL.Time {
   if (allDay) return ICAL.Time.fromDateString(value.slice(0, 10));
   const date = new Date(value);
@@ -32,7 +36,7 @@ function apply(component: ICAL.Component, input: TaskMutation): void {
   component.updatePropertyWithValue('status', input.status.toUpperCase());
   component.updatePropertyWithValue('priority', input.priority);
   if (input.status === 'completed') {
-    component.updatePropertyWithValue('completed', ICAL.Time.now());
+    component.updatePropertyWithValue('completed', utcNow());
     component.updatePropertyWithValue('percent-complete', 100);
   } else {
     component.removeAllProperties('completed');
@@ -62,7 +66,7 @@ function apply(component: ICAL.Component, input: TaskMutation): void {
       component.addProperty(property);
     }
   }
-  component.updatePropertyWithValue('dtstamp', ICAL.Time.now());
+  component.updatePropertyWithValue('dtstamp', utcNow());
 }
 
 function masterInput(
@@ -195,7 +199,7 @@ export function deleteTaskOccurrenceData(
         calendar.removeSubcomponent(component);
     }
     master.addPropertyWithValue('exdate', id);
-    master.updatePropertyWithValue('dtstamp', ICAL.Time.now());
+    master.updatePropertyWithValue('dtstamp', utcNow());
     return calendar.toString();
   } catch (error: unknown) {
     if (error instanceof CalDavError) throw error;
