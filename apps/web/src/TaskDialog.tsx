@@ -8,6 +8,7 @@ interface Props {
   timeFormat?: TimeFormat;
   task?: CalendarTask;
   initialDate?: string;
+  initialEnd?: string;
   simple?: boolean;
   subtasks?: readonly CalendarTask[];
   onCancel: () => void;
@@ -72,6 +73,7 @@ export function TaskDialog({
   timeFormat = '12h',
   task,
   initialDate,
+  initialEnd,
   simple = false,
   subtasks = [],
   onCancel,
@@ -96,7 +98,9 @@ export function TaskDialog({
   const [due, setDue] = useState(
     task?.due
       ? localValue(task.due, task.allDay)
-      : (initialDate?.slice(0, initialAllDay ? 10 : 16) ?? ''),
+      : (initialEnd?.slice(0, initialAllDay ? 10 : 16) ??
+          initialDate?.slice(0, initialAllDay ? 10 : 16) ??
+          ''),
   );
   const [description, setDescription] = useState(task?.description ?? '');
   const [status, setStatus] = useState<TaskMutation['status']>(

@@ -108,6 +108,20 @@ export async function getCalendars(signal?: AbortSignal): Promise<Calendar[]> {
   return calendarsResponseSchema.parse(await json(response)).data;
 }
 
+export async function searchEvents(
+  query: string,
+  calendarIds: string[],
+  signal?: AbortSignal,
+): Promise<CalendarEvent[]> {
+  const parameters = new URLSearchParams({ q: query });
+  calendarIds.forEach((id) => parameters.append('calendarId', id));
+  const response = await fetch(
+    `/api/v1/events/search?${parameters}`,
+    signal ? { signal } : undefined,
+  );
+  return calendarEventsResponseSchema.parse(await json(response)).data;
+}
+
 export async function createCalendar(
   input: CalendarMutation,
 ): Promise<Calendar> {

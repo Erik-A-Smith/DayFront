@@ -40,6 +40,7 @@ import {
   getTasks,
   login,
   logout,
+  searchEvents,
   updateEvent,
   updateCalendar,
   updateTask,
@@ -392,10 +393,12 @@ function TaskGroup({
 
 function EntryTypeDialog({
   date,
+  end,
   onCancel,
   onSelect,
 }: {
   date: string;
+  end?: string;
   onCancel: () => void;
   onSelect: (type: 'event' | 'task') => void;
 }) {
@@ -408,7 +411,10 @@ function EntryTypeDialog({
         aria-labelledby="entry-type-title"
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <h2 id="entry-type-title">Create on {date.slice(0, 10)}</h2>
+        <h2 id="entry-type-title">
+          Create on {date.slice(0, 10)}
+          {end && end !== date ? ` – ${end.slice(0, 10)}` : ''}
+        </h2>
         <p>What would you like to add?</p>
         <div className="entry-type-actions">
           <button type="button" onClick={() => onSelect('event')} autoFocus>
@@ -421,6 +427,90 @@ function EntryTypeDialog({
         <button type="button" className="entry-type-cancel" onClick={onCancel}>
           Cancel
         </button>
+      </section>
+    </div>
+  );
+}
+
+function SearchOverlay({
+  calendarIds,
+  onClose,
+  onSelect,
+}: {
+  calendarIds: string[];
+  onClose: () => void;
+  onSelect: (event: CalendarEvent) => void;
+}) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<CalendarEvent[]>([]);
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    if (query.trim().length < 2) return;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      setLoading(true);
+      void searchEvents(query.trim(), calendarIds, controller.signal)
+        .then(setResults)
+        .catch((error: unknown) => {
+          if (!(error instanceof DOMException && error.name === 'AbortError'))
+            setResults([]);
+        })
+        .finally(() => !controller.signal.aborted && setLoading(false));
+    }, 200);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [calendarIds, query]);
+  return (
+    <div className="search-backdrop" role="presentation" onMouseDown={onClose}>
+      <section
+        className="search-overlay"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Search events"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <div className="search-input-row">
+          <span aria-hidden="true">⌕</span>
+          <input
+            autoFocus
+            type="search"
+            value={query}
+            onChange={(event) => {
+              const value = event.target.value;
+              setQuery(value);
+              if (value.trim().length < 2) {
+                setResults([]);
+                setLoading(false);
+              }
+            }}
+            placeholder="Search events…"
+            aria-label="Search events"
+          />
+          <button type="button" onClick={onClose} aria-label="Close search">
+            ×
+          </button>
+        </div>
+        <div className="search-results" aria-live="polite">
+          {loading ? (
+            <p>Searching…</p>
+          ) : (
+            results.map((event) => (
+              <button
+                type="button"
+                key={`${event.resourceId}-${event.start}`}
+                onClick={() => onSelect(event)}
+              >
+                <strong>{event.title}</strong>
+                <span>{event.start.slice(0, 10)}</span>
+              </button>
+            ))
+          )}
+          {!loading && query.trim().length >= 2 && results.length === 0 && (
+            <p>No events found.</p>
+          )}
+        </div>
       </section>
     </div>
   );
@@ -455,11 +545,18 @@ function CalendarApp({
   const [editor, setEditor] = useState<{
     event?: CalendarEvent;
     initialDate?: string;
+    initialEnd?: string;
   }>();
   const [taskEditor, setTaskEditor] = useState<CalendarTask | null>();
   const [taskEditorReturn, setTaskEditorReturn] = useState<CalendarTask>();
   const [taskInitialDate, setTaskInitialDate] = useState<string>();
-  const [creationDate, setCreationDate] = useState<string>();
+  const [taskInitialEnd, setTaskInitialEnd] = useState<string>();
+  const [creationRange, setCreationRange] = useState<{
+    start: string;
+    end?: string;
+  }>();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [pingResourceId, setPingResourceId] = useState<string>();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [calendarControlsOpen, setCalendarControlsOpen] = useState(false);
   const [calendarFullscreen, setCalendarFullscreen] = useState(false);
@@ -1283,6 +1380,7 @@ function CalendarApp({
                     className="task-action primary-task-action"
                     onClick={() => {
                       setTaskInitialDate(undefined);
+                      setTaskInitialEnd(undefined);
                       setTaskEditorReturn(undefined);
                       setTaskEditor(null);
                     }}
@@ -1323,6 +1421,7 @@ function CalendarApp({
                       }
                       onSelect={(task) => {
                         setTaskInitialDate(undefined);
+                        setTaskInitialEnd(undefined);
                         setTaskEditorReturn(undefined);
                         setTaskEditor(task);
                       }}
@@ -1402,13 +1501,18 @@ function CalendarApp({
               hint: 'Sign out',
               click: () => onLogout?.(),
             },
+            search: {
+              text: '',
+              hint: 'Search events',
+              click: () => setSearchOpen(true),
+            },
           }}
           headerToolbar={{
             left: sidebarSettings.enabled
               ? 'fullScreen compactMenu sidebarToggle prev,next today'
               : 'fullScreen compactMenu prev,next today',
             center: 'title',
-            right: `dayGridMonth,timeGridWeek,timeGridDay,listMonth${onLogout && !sidebarVisible ? ' signOut' : ''}`,
+            right: `search dayGridMonth,timeGridWeek,timeGridDay,listMonth${onLogout && !sidebarVisible ? ' signOut' : ''}`,
           }}
           buttonText={{
             today: 'Today',
@@ -1452,11 +1556,23 @@ function CalendarApp({
           dayMaxEvents={responsiveDayMaxEvents}
           eventDisplay="block"
           selectable
-          dateClick={(info) => setCreationDate(info.dateStr)}
+          select={(info) =>
+            setCreationRange({
+              start: info.startStr,
+              end: info.allDay ? previousDate(info.endStr) : info.endStr,
+            })
+          }
+          dateClick={(info) => setCreationRange({ start: info.dateStr })}
+          eventClassNames={(info) =>
+            info.event.extendedProps.resourceId === pingResourceId
+              ? ['event-search-ping']
+              : []
+          }
           eventClick={(info) => {
             const task = calendarTaskSchema.safeParse(info.event.extendedProps);
             if (task.success) {
               setTaskInitialDate(undefined);
+              setTaskInitialEnd(undefined);
               setTaskEditorReturn(undefined);
               setTaskEditor(task.data);
               return;
@@ -1477,6 +1593,7 @@ function CalendarApp({
           )}
           {...(editor.event ? { event: editor.event } : {})}
           {...(editor.initialDate ? { initialDate: editor.initialDate } : {})}
+          {...(editor.initialEnd ? { initialEnd: editor.initialEnd } : {})}
           timeFormat={timeFormat}
           onCancel={() => setEditor(undefined)}
           onSave={saveEvent}
@@ -1500,6 +1617,7 @@ function CalendarApp({
               : []
           }
           {...(taskInitialDate ? { initialDate: taskInitialDate } : {})}
+          {...(taskInitialEnd ? { initialEnd: taskInitialEnd } : {})}
           timeFormat={timeFormat}
           onCancel={() => {
             setTaskEditor(taskEditorReturn);
@@ -1520,19 +1638,37 @@ function CalendarApp({
           {...(taskEditor ? { onDelete: removeTask } : {})}
         />
       )}
-      {creationDate && (
+      {creationRange && (
         <EntryTypeDialog
-          date={creationDate}
-          onCancel={() => setCreationDate(undefined)}
+          date={creationRange.start}
+          {...(creationRange.end ? { end: creationRange.end } : {})}
+          onCancel={() => setCreationRange(undefined)}
           onSelect={(type) => {
-            const date = creationDate;
-            setCreationDate(undefined);
-            if (type === 'event') setEditor({ initialDate: date });
+            const range = creationRange;
+            setCreationRange(undefined);
+            if (type === 'event')
+              setEditor({
+                initialDate: range.start,
+                ...(range.end ? { initialEnd: range.end } : {}),
+              });
             else {
-              setTaskInitialDate(date);
+              setTaskInitialDate(range.start);
+              setTaskInitialEnd(range.end);
               setTaskEditorReturn(undefined);
               setTaskEditor(null);
             }
+          }}
+        />
+      )}
+      {searchOpen && (
+        <SearchOverlay
+          calendarIds={[...selected]}
+          onClose={() => setSearchOpen(false)}
+          onSelect={(event) => {
+            setSearchOpen(false);
+            setPingResourceId(event.resourceId);
+            calendarRef.current?.getApi().gotoDate(event.start);
+            window.setTimeout(() => setPingResourceId(undefined), 1200);
           }}
         />
       )}

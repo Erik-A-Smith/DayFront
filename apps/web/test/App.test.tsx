@@ -887,6 +887,48 @@ describe('DayFront calendar', () => {
     expect(screen.getByLabelText('End date')).toHaveValue('2026-08-04');
   });
 
+  it('initializes an all-day event from a multi-day calendar selection', () => {
+    render(
+      <EventDialog
+        calendars={[
+          {
+            id: 'personal',
+            displayName: 'Personal',
+            components: ['VEVENT'],
+          },
+        ]}
+        initialDate="2026-08-04"
+        initialEnd="2026-08-06"
+        onCancel={() => undefined}
+        onSave={() => Promise.resolve()}
+      />,
+    );
+
+    expect(screen.getByLabelText('Start date')).toHaveValue('2026-08-04');
+    expect(screen.getByLabelText('End date')).toHaveValue('2026-08-06');
+  });
+
+  it('initializes an all-day task from a multi-day calendar selection', () => {
+    render(
+      <TaskDialog
+        calendars={[
+          {
+            id: 'personal',
+            displayName: 'Personal',
+            components: ['VTODO'],
+          },
+        ]}
+        initialDate="2026-08-04"
+        initialEnd="2026-08-06"
+        onCancel={() => undefined}
+        onSave={() => Promise.resolve()}
+      />,
+    );
+
+    expect(screen.getByLabelText('Start date')).toHaveValue('2026-08-04');
+    expect(screen.getByLabelText('Due date')).toHaveValue('2026-08-06');
+  });
+
   it('keeps a valid event end even when the duration is under one hour', () => {
     render(
       <EventDialog

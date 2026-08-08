@@ -134,6 +134,31 @@ export class CalDavClient {
     });
   }
 
+  async searchCalendar(
+    calendarUrl: string,
+    query: string,
+  ): Promise<CalendarResource[]> {
+    const body = `<?xml version="1.0" encoding="utf-8"?>
+<c:calendar-query xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
+  <d:prop><d:getetag/><c:calendar-data/></d:prop>
+  <c:filter><c:comp-filter name="VCALENDAR"><c:comp-filter name="VEVENT"><c:prop-filter name="SUMMARY"><c:text-match collation="i;unicode-casemap">${this.xml(query)}</c:text-match></c:prop-filter></c:comp-filter></c:comp-filter></c:filter>
+</c:calendar-query>`;
+    const response = await this.request(calendarUrl, {
+      method: 'REPORT',
+      headers: { Depth: '1', 'Content-Type': 'application/xml; charset=utf-8' },
+      body,
+    });
+    this.expectStatus(response, [207]);
+    const resources = parseMultiStatus(await response.text());
+    return resources.flatMap(({ href, properties }): CalendarResource[] => {
+      const etag = text(properties.getetag);
+      const calendarData = text(properties['calendar-data']);
+      return etag && calendarData
+        ? [{ url: this.resolveHref(href).href, etag, calendarData }]
+        : [];
+    });
+  }
+
   async queryTasks(
     calendarUrl: string,
     start?: Date,

@@ -97,6 +97,24 @@ describe('CalDavClient', () => {
     );
   });
 
+  it('searches event summaries with an escaped CalDAV text match', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(xmlResponse('query.xml'));
+    const client = new CalDavClient(config, { fetch: fetchMock });
+
+    const resources = await client.searchCalendar(
+      'http://caldav.test:5232/dayfront/personal/',
+      'pay & benefits',
+    );
+
+    expect(resources).toHaveLength(1);
+    const requestBody = fetchMock.mock.calls[0]?.[1]?.body;
+    expect(requestBody).toContain('<c:prop-filter name="SUMMARY">');
+    expect(requestBody).toContain('pay &amp; benefits');
+    expect(requestBody).not.toContain('<c:time-range');
+  });
+
   it('uses ETag preconditions for update and delete', async () => {
     const fetchMock = vi
       .fn<typeof fetch>()

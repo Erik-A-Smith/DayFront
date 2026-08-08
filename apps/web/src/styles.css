@@ -1357,6 +1357,96 @@ input[type='checkbox']:disabled {
   font-size: 0.82rem;
 }
 
+.fc .fc-search-button::before {
+  content: '⌕';
+  font-size: 1.25rem;
+}
+.search-backdrop {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: start center;
+  padding: min(16vh, 8rem) 1rem 1rem;
+  background: rgb(8 12 10 / 35%);
+  backdrop-filter: blur(12px);
+}
+.search-overlay {
+  width: min(42rem, 100%);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--panel);
+  box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 30%);
+}
+.search-input-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--line);
+}
+.search-input-row input {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  font-size: 1.05rem;
+}
+.search-input-row button {
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.5rem;
+}
+.search-results {
+  display: grid;
+  max-height: min(55vh, 30rem);
+  overflow: auto;
+  padding: 0.5rem;
+}
+.search-results > button {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem;
+  border: 0;
+  border-radius: 0.65rem;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+.search-results > button:hover,
+.search-results > button:focus-visible {
+  background: var(--panel-soft);
+}
+.search-results span,
+.search-results p {
+  color: var(--muted);
+}
+.search-results p {
+  padding: 0.75rem;
+}
+.event-search-ping {
+  animation: event-search-ping 1.1s ease-out;
+}
+@keyframes event-search-ping {
+  0%,
+  35% {
+    filter: brightness(1.8);
+    box-shadow: 0 0 0 0.35rem rgb(255 220 90 / 65%);
+  }
+  100% {
+    filter: none;
+    box-shadow: none;
+  }
+}
+
 .login-shell {
   min-height: 100vh;
   display: grid;

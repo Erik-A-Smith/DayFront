@@ -7,6 +7,7 @@ interface EventDialogProps {
   calendars: readonly Calendar[];
   event?: CalendarEvent;
   initialDate?: string;
+  initialEnd?: string;
   timeFormat?: TimeFormat;
   onCancel: () => void;
   onDelete?: (scope: 'series' | 'occurrence') => Promise<void>;
@@ -77,6 +78,7 @@ export function EventDialog({
   calendars,
   event,
   initialDate,
+  initialEnd,
   timeFormat = '12h',
   onCancel,
   onDelete,
@@ -102,7 +104,7 @@ export function EventDialog({
         : localDateTime(event.end)
       : initialDate && !initialAllDay
         ? oneHourAfter(initialDate)
-        : (initialDate?.slice(0, 10) ?? ''),
+        : (initialEnd?.slice(0, 10) ?? initialDate?.slice(0, 10) ?? ''),
   );
   const [description, setDescription] = useState(event?.description ?? '');
   const [location, setLocation] = useState(event?.location ?? '');

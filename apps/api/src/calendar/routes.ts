@@ -301,6 +301,43 @@ export function calendarRouter(
     }
   });
 
+  router.get('/events/search', async (request, response) => {
+    const query =
+      typeof request.query.q === 'string' ? request.query.q.trim() : '';
+    if (query.length < 2 || query.length > 200)
+      throw new ApiError(
+        400,
+        'VALIDATION_FAILED',
+        'q must contain between 2 and 200 characters.',
+      );
+    const ids = selectedIds(request.query.calendarId);
+    try {
+      const discovery = await client.discover();
+      const calendars = discovery.calendars.filter(
+        (calendar) =>
+          calendar.components.includes('VEVENT') &&
+          (!ids || ids.has(calendar.id)),
+      );
+      const results = await Promise.allSettled(
+        calendars.map(async (calendar) =>
+          (await client.searchCalendar(calendar.url, query)).flatMap(
+            (resource) => mapCalendarResource(resource, calendar.id),
+          ),
+        ),
+      );
+      const events = results.flatMap((result) =>
+        result.status === 'fulfilled' ? result.value : [],
+      );
+      events.sort((left, right) => left.start.localeCompare(right.start));
+      response.json({
+        data: events,
+        meta: { requestId: String(response.locals.requestId) },
+      });
+    } catch (error: unknown) {
+      throw mapError(error);
+    }
+  });
+
   router.get('/tasks', async (request, response) => {
     const hasRange =
       request.query.start !== undefined || request.query.end !== undefined;
