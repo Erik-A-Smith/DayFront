@@ -395,6 +395,76 @@ h1 {
   background: var(--panel);
   box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 30%);
 }
+.recurrence-action-backdrop {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  display: grid;
+  padding: 1rem;
+  background: rgb(5 8 7 / 45%);
+  backdrop-filter: blur(8px);
+  place-items: center;
+}
+.recurrence-action-dialog {
+  width: min(27rem, 100%);
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--panel);
+  box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 32%);
+  text-align: center;
+}
+.recurrence-action-icon {
+  display: grid;
+  width: 2.6rem;
+  height: 2.6rem;
+  margin: 0 auto 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+  border-radius: 50%;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  font-size: 1.35rem;
+  place-items: center;
+}
+.recurrence-action-dialog h3 {
+  margin: 0;
+}
+.recurrence-action-dialog > p {
+  margin: 0.35rem 0 1rem;
+  color: var(--muted);
+}
+.recurrence-action-options {
+  display: grid;
+  gap: 0.55rem;
+}
+.recurrence-action-options button {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+  color: inherit;
+  background: var(--panel-soft);
+  cursor: pointer;
+  text-align: left;
+}
+.recurrence-action-options button:hover,
+.recurrence-action-options button:focus-visible {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+}
+.recurrence-action-options span {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.recurrence-action-cancel {
+  margin-top: 0.8rem;
+  padding: 0.45rem 0.75rem;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+}
 .entry-type-dialog h2 {
   margin-bottom: 0.35rem;
 }

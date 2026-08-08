@@ -228,6 +228,21 @@ function taskStatusInput(
   };
 }
 
+function taskDateLabel(task: CalendarTask): string | undefined {
+  const value = task.due ?? task.start;
+  if (!value) return undefined;
+  const key = localDateKey(value);
+  const today = localDateKey(new Date().toISOString());
+  if (key === today) return 'Today';
+  const tomorrow = new Date(`${today}T00:00:00`);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  if (key === localDateKey(tomorrow.toISOString())) return 'Tomorrow';
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+  }).format(new Date(`${key}T12:00:00`));
+}
+
 function TaskTreeItem({
   task,
   childrenByUid,
@@ -249,6 +264,7 @@ function TaskTreeItem({
     : (childrenByUid.get(task.uid) ?? []);
   const nextAncestors = new Set(ancestors).add(task.uid);
   const subtaskListId = `subtasks-${task.id.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+  const dateLabel = taskDateLabel(task);
   return (
     <li className={task.completed ? 'is-completed' : ''}>
       <div className="task-list-row">
@@ -281,7 +297,19 @@ function TaskTreeItem({
           className="task-title-button"
           onClick={() => onSelect(task)}
         >
-          <span className="task-list-title">{task.title}</span>
+          <span className="task-copy">
+            <span className="task-list-title">{task.title}</span>
+            {(dateLabel || children.length > 0) && (
+              <span className="task-list-meta">
+                {dateLabel && <span>{dateLabel}</span>}
+                {children.length > 0 && (
+                  <span>
+                    {children.length} {children.length === 1 ? 'step' : 'steps'}
+                  </span>
+                )}
+              </span>
+            )}
+          </span>
           {task.priority > 0 && (
             <span className="task-priority" title={`Priority ${task.priority}`}>
               P{task.priority}
@@ -368,7 +396,7 @@ function TaskGroup({
   const [open, setOpen] = useState(title !== 'Completed');
   return (
     <details
-      className="task-group"
+      className={`task-group task-group-${title.toLowerCase()}`}
       open={open}
       onToggle={(event) => setOpen(event.currentTarget.open)}
     >
@@ -1434,6 +1462,32 @@ function CalendarApp({
                 <summary className="picker-summary">
                   <h2 id="task-list-heading">Tasks</h2>
                 </summary>
+                {!loadingTasks && tasks.length > 0 && (
+                  <div className="task-overview">
+                    <div className="task-overview-heading">
+                      <div>
+                        <span className="task-overview-kicker">Your focus</span>
+                        <strong>
+                          {taskGroups.Overdue.length + taskGroups.Today.length}{' '}
+                          due now
+                        </strong>
+                      </div>
+                      <span className="task-overview-score">
+                        {completedTasks.length}/{hierarchy.roots.length}
+                      </span>
+                    </div>
+                    <div
+                      className="task-progress"
+                      aria-label={`${completedTasks.length} of ${hierarchy.roots.length} tasks completed`}
+                    >
+                      <span
+                        style={{
+                          width: `${hierarchy.roots.length ? (completedTasks.length / hierarchy.roots.length) * 100 : 0}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
                 <div className="task-actions">
                   <button
                     type="button"

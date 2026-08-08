@@ -2,6 +2,7 @@ import type { Calendar, CalendarEvent, EventMutation } from '@dayfront/shared';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 import { ClockInput, type TimeFormat } from './ClockInput.js';
+import { RecurrenceActionDialog } from './RecurrenceActionDialog.js';
 
 interface EventDialogProps {
   calendars: readonly Calendar[];
@@ -116,9 +117,7 @@ export function EventDialog({
       ? (event?.recurrenceRule ?? '')
       : '',
   );
-  const [recurrenceScope, setRecurrenceScope] = useState<
-    'series' | 'occurrence'
-  >(event?.recurring && event.recurrenceId ? 'occurrence' : 'series');
+  const [pendingAction, setPendingAction] = useState<'save' | 'delete'>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const operationInFlight = useRef(false);
@@ -134,6 +133,14 @@ export function EventDialog({
   async function submit(formEvent: FormEvent) {
     formEvent.preventDefault();
     if (operationInFlight.current) return;
+    if (event?.recurring && event.recurrenceId && !movingRecurringSeries) {
+      setPendingAction('save');
+      return;
+    }
+    await save(movingRecurringSeries ? 'series' : undefined);
+  }
+
+  async function save(scope?: 'series' | 'occurrence') {
     operationInFlight.current = true;
     setBusy(true);
     setError(undefined);
@@ -158,9 +165,7 @@ export function EventDialog({
               : commonRules[recurrence as keyof typeof commonRules],
         ...(event?.recurring
           ? {
-              recurrenceScope: movingRecurringSeries
-                ? 'series'
-                : recurrenceScope,
+              recurrenceScope: scope ?? 'series',
               ...(event.recurrenceId
                 ? {
                     recurrenceId: event.recurrenceId,
@@ -180,16 +185,20 @@ export function EventDialog({
   }
 
   async function remove() {
-    if (
-      operationInFlight.current ||
-      !onDelete ||
-      !window.confirm('Delete this event?')
-    )
+    if (operationInFlight.current || !onDelete) return;
+    if (event?.recurring && event.recurrenceId) {
+      setPendingAction('delete');
       return;
+    }
+    if (!window.confirm('Delete this event?')) return;
+    await deleteWithScope('series');
+  }
+
+  async function deleteWithScope(scope: 'series' | 'occurrence') {
     operationInFlight.current = true;
     setBusy(true);
     try {
-      await onDelete(recurrenceScope);
+      await onDelete?.(scope);
     } catch {
       operationInFlight.current = false;
       setError('The event could not be deleted. Reload and try again.');
@@ -232,15 +241,7 @@ export function EventDialog({
             <select
               aria-label="Calendar"
               value={calendarId}
-              onChange={(change) => {
-                setCalendarId(change.target.value);
-                if (
-                  event?.recurring &&
-                  event.recurrenceId &&
-                  change.target.value !== event.calendarId
-                )
-                  setRecurrenceScope('series');
-              }}
+              onChange={(change) => setCalendarId(change.target.value)}
             >
               {calendars.map((calendar) => (
                 <option value={calendar.id} key={calendar.id}>
@@ -383,27 +384,6 @@ export function EventDialog({
               <option value="custom">Custom RRULE</option>
             </select>
           </label>
-          {event?.recurring && event.recurrenceId && (
-            <label>
-              Apply changes to
-              <select
-                value={movingRecurringSeries ? 'series' : recurrenceScope}
-                onChange={(change) =>
-                  setRecurrenceScope(
-                    change.target.value as 'series' | 'occurrence',
-                  )
-                }
-              >
-                <option value="occurrence" disabled={movingRecurringSeries}>
-                  This occurrence
-                </option>
-                <option value="future" disabled>
-                  This and future occurrences — not yet supported
-                </option>
-                <option value="series">Entire series</option>
-              </select>
-            </label>
-          )}
           {recurrence === 'custom' && (
             <label>
               Recurrence rule
@@ -456,6 +436,19 @@ export function EventDialog({
           </div>
         </form>
       </section>
+      {pendingAction && (
+        <RecurrenceActionDialog
+          action={pendingAction}
+          entryType="event"
+          onCancel={() => setPendingAction(undefined)}
+          onSelect={(scope) => {
+            const action = pendingAction;
+            setPendingAction(undefined);
+            if (action === 'save') void save(scope);
+            else void deleteWithScope(scope);
+          }}
+        />
+      )}
     </div>
   );
 }

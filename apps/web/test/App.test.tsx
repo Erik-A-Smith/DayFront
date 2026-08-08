@@ -1124,19 +1124,13 @@ describe('DayFront calendar', () => {
     );
 
     expect(screen.getByLabelText('Calendar')).toBeEnabled();
-    expect(screen.getByLabelText('Apply changes to')).toHaveValue('occurrence');
+    expect(screen.queryByLabelText('Apply changes to')).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Calendar'), {
       target: { value: 'work' },
     });
-    expect(screen.getByLabelText('Apply changes to')).toHaveValue('series');
     expect(
       screen.getByText('Changing calendars moves the entire recurring series.'),
     ).toBeVisible();
-    expect(
-      within(screen.getByLabelText('Apply changes to')).getByRole('option', {
-        name: 'This occurrence',
-      }),
-    ).toBeDisabled();
     fireEvent.submit(
       screen.getByRole('button', { name: 'Save' }).closest('form')!,
     );
@@ -1146,6 +1140,49 @@ describe('DayFront calendar', () => {
           calendarId: 'work',
           recurrenceScope: 'series',
         }),
+        [],
+      ),
+    );
+  });
+
+  it('prompts for scope when saving a recurring task occurrence', async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined);
+    render(
+      <TaskDialog
+        calendars={[
+          { id: 'personal', displayName: 'Personal', components: ['VTODO'] },
+        ]}
+        task={{
+          id: 'recurring-task',
+          resourceId: 'resource',
+          calendarId: 'personal',
+          uid: 'uid',
+          title: 'Recurring task',
+          start: '2026-08-04',
+          due: '2026-08-04',
+          allDay: true,
+          status: 'needs-action',
+          completed: false,
+          priority: 0,
+          version: 'v1',
+          entryType: 'todo',
+          recurring: true,
+          recurrenceRule: 'FREQ=DAILY',
+          recurrenceId: '2026-08-04',
+        }}
+        onCancel={() => undefined}
+        onSave={onSave}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(
+      screen.getByRole('heading', { name: 'Apply changes to…' }),
+    ).toBeVisible();
+    expect(onSave).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: /This occurrence/ }));
+    await waitFor(() =>
+      expect(onSave).toHaveBeenCalledWith(
+        expect.objectContaining({ recurrenceScope: 'occurrence' }),
         [],
       ),
     );

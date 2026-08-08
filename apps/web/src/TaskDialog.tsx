@@ -2,6 +2,7 @@ import type { Calendar, CalendarTask, TaskMutation } from '@dayfront/shared';
 import { useRef, useState, type FormEvent } from 'react';
 
 import { ClockInput, type TimeFormat } from './ClockInput.js';
+import { RecurrenceActionDialog } from './RecurrenceActionDialog.js';
 
 interface Props {
   calendars: readonly Calendar[];
@@ -107,9 +108,7 @@ export function TaskDialog({
     task?.status ?? 'needs-action',
   );
   const [priority, setPriority] = useState(task?.priority ?? 0);
-  const [recurrenceScope, setRecurrenceScope] = useState<
-    'series' | 'occurrence'
-  >(task?.recurring && task.recurrenceId ? 'occurrence' : 'series');
+  const [pendingAction, setPendingAction] = useState<'save' | 'delete'>();
   const initialRuleChoice = ruleChoice(task?.recurrenceRule);
   const [recurrence, setRecurrence] = useState(initialRuleChoice);
   const [customRule, setCustomRule] = useState(
@@ -134,6 +133,14 @@ export function TaskDialog({
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (operation.current) return;
+    if (task?.recurring && task.recurrenceId && !movingRecurringSeries) {
+      setPendingAction('save');
+      return;
+    }
+    await save(movingRecurringSeries ? 'series' : undefined);
+  }
+
+  async function save(scope?: 'series' | 'occurrence') {
     operation.current = true;
     setBusy(true);
     setError(undefined);
@@ -167,9 +174,7 @@ export function TaskDialog({
                 ? {
                     recurrenceId: task.recurrenceId,
                     occurrenceStart: task.start ?? task.due,
-                    recurrenceScope: movingRecurringSeries
-                      ? 'series'
-                      : recurrenceScope,
+                    recurrenceScope: scope ?? 'series',
                   }
                 : {}),
             },
@@ -183,9 +188,12 @@ export function TaskDialog({
   }
 
   async function remove() {
+    if (operation.current || !onDelete) return;
+    if (task?.recurring && task.recurrenceId) {
+      setPendingAction('delete');
+      return;
+    }
     if (
-      operation.current ||
-      !onDelete ||
       !window.confirm(
         subtasks.length > 0
           ? 'Delete this task and all of its subtasks?'
@@ -193,10 +201,14 @@ export function TaskDialog({
       )
     )
       return;
+    await deleteWithScope('series');
+  }
+
+  async function deleteWithScope(scope: 'series' | 'occurrence') {
     operation.current = true;
     setBusy(true);
     try {
-      await onDelete(recurrenceScope);
+      await onDelete?.(scope);
     } catch {
       operation.current = false;
       setBusy(false);
@@ -295,15 +307,7 @@ export function TaskDialog({
               <select
                 aria-label="Calendar"
                 value={calendarId}
-                onChange={(event) => {
-                  setCalendarId(event.target.value);
-                  if (
-                    task?.recurring &&
-                    task.recurrenceId &&
-                    event.target.value !== task.calendarId
-                  )
-                    setRecurrenceScope('series');
-                }}
+                onChange={(event) => setCalendarId(event.target.value)}
               >
                 {calendars.map((calendar) => (
                   <option value={calendar.id} key={calendar.id}>
@@ -444,24 +448,6 @@ export function TaskDialog({
                 />
                 All day
               </label>
-              {task?.recurring && task.recurrenceId && (
-                <label>
-                  Apply changes to
-                  <select
-                    value={movingRecurringSeries ? 'series' : recurrenceScope}
-                    onChange={(event) =>
-                      setRecurrenceScope(
-                        event.target.value as 'series' | 'occurrence',
-                      )
-                    }
-                  >
-                    <option value="occurrence" disabled={movingRecurringSeries}>
-                      This occurrence
-                    </option>
-                    <option value="series">Entire series</option>
-                  </select>
-                </label>
-              )}
               <div className="date-fields">
                 <div className="date-time-field">
                   <span>Starts</span>
@@ -626,6 +612,19 @@ export function TaskDialog({
           </div>
         </form>
       </section>
+      {pendingAction && (
+        <RecurrenceActionDialog
+          action={pendingAction}
+          entryType="task"
+          onCancel={() => setPendingAction(undefined)}
+          onSelect={(scope) => {
+            const action = pendingAction;
+            setPendingAction(undefined);
+            if (action === 'save') void save(scope);
+            else void deleteWithScope(scope);
+          }}
+        />
+      )}
     </div>
   );
 }

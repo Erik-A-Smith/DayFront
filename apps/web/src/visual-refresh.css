@@ -430,6 +430,225 @@ label,
   background: color-mix(in srgb, var(--accent-cool) 10%, transparent);
 }
 
+.task-overview {
+  position: relative;
+  overflow: hidden;
+  margin: 0.2rem 0 0.8rem;
+  padding: 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
+  border-radius: 0.9rem;
+  background:
+    radial-gradient(
+      circle at 100% 0,
+      color-mix(in srgb, var(--accent-cool) 18%, transparent),
+      transparent 52%
+    ),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--accent) 8%, var(--canvas-raised)),
+      var(--canvas-raised)
+    );
+  box-shadow:
+    0 0.7rem 1.6rem rgb(0 0 0 / 12%),
+    inset 0 1px rgb(255 255 255 / 5%);
+}
+
+.task-overview::after {
+  position: absolute;
+  top: -1.8rem;
+  right: -1.2rem;
+  width: 5rem;
+  height: 5rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
+  border-radius: 50%;
+  content: '';
+  pointer-events: none;
+}
+
+.task-overview-heading {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.task-overview-heading > div {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.task-overview-kicker {
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.task-overview-heading strong {
+  color: var(--text);
+  font-size: 0.9rem;
+  letter-spacing: -0.015em;
+}
+
+.task-overview-score {
+  display: grid;
+  min-width: 2.35rem;
+  height: 2.35rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+  border-radius: 50%;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  font-size: 0.68rem;
+  font-weight: 800;
+  place-items: center;
+}
+
+.task-progress {
+  position: relative;
+  z-index: 1;
+  height: 0.28rem;
+  margin-top: 0.78rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+.task-progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent-cool), var(--accent));
+  box-shadow: 0 0 0.7rem color-mix(in srgb, var(--accent) 45%, transparent);
+  transition: width 260ms ease;
+}
+
+.task-group {
+  position: relative;
+  margin-top: 0.55rem;
+  padding: 0.28rem;
+  border: 1px solid transparent;
+  border-radius: 0.85rem;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease;
+}
+
+.task-group[open] {
+  border-color: color-mix(in srgb, var(--line) 70%, transparent);
+  background: color-mix(in srgb, var(--canvas-raised) 68%, transparent);
+}
+
+.task-group + .task-group {
+  margin-top: 0.48rem;
+}
+
+.task-group summary::after {
+  width: 0.48rem;
+  height: 0.48rem;
+  margin-right: 0.35rem;
+  border-radius: 50%;
+  background: var(--accent-cool);
+  box-shadow: 0 0 0.55rem
+    color-mix(in srgb, var(--accent-cool) 45%, transparent);
+  content: '';
+  order: -1;
+}
+
+.task-group-overdue summary::after {
+  background: var(--danger);
+  box-shadow: 0 0 0.55rem color-mix(in srgb, var(--danger) 45%, transparent);
+}
+
+.task-group-today summary::after {
+  background: var(--accent);
+  box-shadow: 0 0 0.55rem color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.task-group-completed summary::after {
+  background: var(--muted);
+  box-shadow: none;
+}
+
+.task-group-undated summary::after {
+  background: var(--text-soft);
+  box-shadow: none;
+}
+
+.task-group summary::before {
+  flex: 0 0 auto;
+  margin-right: 0.55rem;
+  margin-left: 0;
+  order: -2;
+}
+
+.task-group summary > span:first-child {
+  order: 1;
+}
+
+.task-group summary > span:last-child {
+  order: 3;
+}
+
+.task-group ul {
+  gap: 0.3rem;
+}
+
+.task-list-row {
+  min-height: 2.65rem;
+  border-radius: 0.68rem;
+}
+
+.task-group li .task-title-button {
+  padding-block: 0.42rem;
+}
+
+.task-copy {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 0.16rem;
+}
+
+.task-list-meta {
+  display: flex;
+  gap: 0.45rem;
+  color: var(--muted);
+  font-size: 0.62rem;
+  line-height: 1;
+}
+
+.task-list-meta span + span::before {
+  margin-right: 0.45rem;
+  content: '·';
+}
+
+.task-group-overdue .task-list-meta span:first-child {
+  color: var(--danger);
+}
+
+.task-list-row:hover,
+.task-list-row:focus-within {
+  border-color: color-mix(in srgb, var(--accent-cool) 20%, var(--line));
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--accent-cool) 7%, transparent),
+      transparent
+    ),
+    var(--surface-hover);
+  transform: translateX(2px);
+}
+
+.task-list-row {
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    transform 140ms ease;
+}
+
 .account-menu {
   position: relative;
   z-index: 2;
@@ -1100,7 +1319,8 @@ label,
 
 .event-dialog,
 .entry-type-dialog,
-.clock-dialog {
+.clock-dialog,
+.recurrence-action-dialog {
   border-color: var(--line-strong);
   border-radius: var(--radius-lg);
   background:
@@ -1119,10 +1339,127 @@ label,
 
 .dialog-heading h2,
 .entry-type-dialog h2,
-.clock-heading h3 {
+.clock-heading h3,
+.recurrence-action-heading h3 {
   color: var(--text);
   font-weight: 750;
   letter-spacing: -0.025em;
+}
+
+.recurrence-action-backdrop {
+  background: rgb(2 3 7 / 74%);
+  backdrop-filter: blur(12px) saturate(0.8);
+  animation: backdrop-in 180ms ease-out;
+}
+
+.recurrence-action-dialog {
+  padding: 1.35rem;
+  text-align: left;
+}
+
+.recurrence-action-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.recurrence-action-heading > div {
+  min-width: 0;
+}
+
+.recurrence-action-heading h3 {
+  font-size: 1.15rem;
+}
+
+.recurrence-action-heading p {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.recurrence-action-icon {
+  flex: 0 0 2.5rem;
+  margin: 0;
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--line));
+  border-radius: 0.72rem;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--canvas-raised));
+  box-shadow: 0 1px rgb(255 255 255 / 5%) inset;
+}
+
+.recurrence-action-options {
+  gap: 0.6rem;
+}
+
+.recurrence-action-options button {
+  position: relative;
+  min-height: 3.8rem;
+  padding: 0.72rem 2.5rem 0.72rem 0.85rem;
+  border-color: var(--line);
+  border-radius: 0.72rem;
+  color: var(--text-soft);
+  background: var(--canvas-raised);
+  box-shadow: 0 1px rgb(255 255 255 / 3%) inset;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease;
+}
+
+.recurrence-action-options button::after {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  width: 0.42rem;
+  height: 0.42rem;
+  border-top: 1.5px solid currentcolor;
+  border-right: 1.5px solid currentcolor;
+  content: '';
+  opacity: 0.5;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.recurrence-action-options button:hover,
+.recurrence-action-options button:focus-visible {
+  border-color: var(--line-strong);
+  color: var(--text);
+  background: var(--surface-hover);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.recurrence-action-options button:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.recurrence-action-options strong {
+  font-size: 0.82rem;
+}
+
+.recurrence-action-options span {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.recurrence-action-cancel {
+  display: block;
+  min-height: 2.35rem;
+  margin: 0.75rem 0 0 auto;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.65rem;
+  color: var(--muted);
+  transition:
+    color 140ms ease,
+    background 140ms ease;
+}
+
+.recurrence-action-cancel:hover,
+.recurrence-action-cancel:focus-visible {
+  color: var(--text);
+  background: var(--surface-hover);
+  outline: none;
 }
 
 .icon-button,
