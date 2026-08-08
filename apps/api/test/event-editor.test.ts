@@ -47,6 +47,63 @@ describe('event editing', () => {
     ).not.toContain('RRULE:');
   });
 
+  it('makes the weekday explicit for simple weekly all-day events', () => {
+    const source = createEventData({
+      ...input,
+      start: '2026-08-06',
+      end: '2026-08-07',
+      allDay: true,
+      recurrenceRule: 'FREQ=WEEKLY',
+    });
+
+    expect(source).toContain('DTSTART;VALUE=DATE:20260806');
+    expect(source).toContain('RRULE:FREQ=WEEKLY;BYDAY=TH');
+  });
+
+  it('includes the first occurrence of a weekly multi-day all-day event', () => {
+    const source = createEventData({
+      ...input,
+      start: '2026-08-05',
+      end: '2026-08-07',
+      allDay: true,
+      recurrenceRule: 'FREQ=WEEKLY',
+    });
+    const events = mapCalendarResource(
+      {
+        url: 'http://caldav.test/multi-day-event.ics',
+        etag: '"v1"',
+        calendarData: source,
+      },
+      'personal',
+      {
+        start: new Date('2026-08-01T00:00:00Z'),
+        end: new Date('2026-08-20T00:00:00Z'),
+        maxOccurrences: 100,
+      },
+    );
+
+    expect(source).toContain('DTSTART;VALUE=DATE:20260805');
+    expect(source).toContain('DTEND;VALUE=DATE:20260807');
+    expect(source).toContain('RRULE:FREQ=WEEKLY;BYDAY=WE');
+    expect(events.map(({ start, end }) => ({ start, end }))).toEqual([
+      { start: '2026-08-05', end: '2026-08-07' },
+      { start: '2026-08-12', end: '2026-08-14' },
+      { start: '2026-08-19', end: '2026-08-21' },
+    ]);
+  });
+
+  it('does not rewrite custom weekly recurrence rules', () => {
+    const source = createEventData({
+      ...input,
+      start: '2026-08-06',
+      end: '2026-08-07',
+      allDay: true,
+      recurrenceRule: 'FREQ=WEEKLY;INTERVAL=2',
+    });
+
+    expect(source).toContain('RRULE:FREQ=WEEKLY;INTERVAL=2');
+  });
+
   it('updates fields while preserving recurrence and extension properties', () => {
     const source = updateEventData(fixture, input);
 

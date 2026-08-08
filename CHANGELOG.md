@@ -4,6 +4,10 @@ All notable changes to DayFront are documented here.
 
 ## Unreleased
 
+## 1.3.1 - 2026-08-08
+
+- Make weekdays explicit in simple weekly all-day recurrence rules for reliable Android calendar and widget expansion
+
 ## 1.3.0 - 2026-08-05
 
 - Redesign DayFront with responsive frosted-glass light and dark themes across the calendar, sidebar, dialogs, controls, and login experience

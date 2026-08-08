@@ -17,6 +17,18 @@ function time(value: string, allDay: boolean): ICAL.Time {
   return ICAL.Time.fromJSDate(date, true);
 }
 
+const weekDays = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'] as const;
+
+function recurrenceRule(input: EventMutation): string | undefined {
+  if (typeof input.recurrenceRule !== 'string') return undefined;
+  if (!input.allDay || input.recurrenceRule.toUpperCase() !== 'FREQ=WEEKLY')
+    return input.recurrenceRule;
+
+  const date = new Date(`${input.start.slice(0, 10)}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) return input.recurrenceRule;
+  return `FREQ=WEEKLY;BYDAY=${weekDays[date.getUTCDay()]}`;
+}
+
 function apply(event: ICAL.Event, input: EventMutation): void {
   event.summary = input.title;
   event.startDate = time(input.start, input.allDay);
@@ -30,7 +42,7 @@ function apply(event: ICAL.Event, input: EventMutation): void {
     try {
       event.component.updatePropertyWithValue(
         'rrule',
-        ICAL.Recur.fromString(input.recurrenceRule),
+        ICAL.Recur.fromString(recurrenceRule(input) ?? input.recurrenceRule),
       );
     } catch (error: unknown) {
       throw new CalDavError(
