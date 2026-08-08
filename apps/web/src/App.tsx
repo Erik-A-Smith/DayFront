@@ -435,11 +435,11 @@ function EntryTypeDialog({
 }
 
 export function SearchOverlay({
-  calendarIds,
+  calendars,
   onClose,
   onSelect,
 }: {
-  calendarIds: string[];
+  calendars: readonly Calendar[];
   onClose: () => void;
   onSelect: (event: CalendarEvent) => void;
 }) {
@@ -448,9 +448,14 @@ export function SearchOverlay({
   const [loading, setLoading] = useState(true);
   const [fuzzy, setFuzzy] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const controller = new AbortController();
-    void searchEvents(undefined, calendarIds, controller.signal)
+    void searchEvents(
+      undefined,
+      calendars.map((calendar) => calendar.id),
+      controller.signal,
+    )
       .then(setIndex)
       .catch((error: unknown) => {
         if (!(error instanceof DOMException && error.name === 'AbortError'))
@@ -460,7 +465,17 @@ export function SearchOverlay({
     return () => {
       controller.abort();
     };
-  }, [calendarIds]);
+  }, [calendars]);
+  const colors = useMemo(
+    () =>
+      new Map(
+        calendars.map((calendar, index) => [
+          calendar.id,
+          colorFor(calendar, index),
+        ]),
+      ),
+    [calendars],
+  );
   const results = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase();
     if (needle.length < 2) return [];
@@ -498,6 +513,7 @@ export function SearchOverlay({
         <div className="search-input-row">
           <span className="search-input-icon" aria-hidden="true" />
           <input
+            ref={inputRef}
             autoFocus
             type="search"
             value={query}
@@ -520,6 +536,7 @@ export function SearchOverlay({
             onChange={(event) => {
               setFuzzy(event.target.checked);
               setActiveIndex(0);
+              window.requestAnimationFrame(() => inputRef.current?.focus());
             }}
           />
           Fuzzy matching
@@ -538,7 +555,14 @@ export function SearchOverlay({
                 }
                 onMouseEnter={() => setActiveIndex(resultIndex)}
               >
-                <strong>{event.title}</strong>
+                <span className="search-result-title">
+                  <span
+                    className="search-result-color"
+                    style={{ backgroundColor: colors.get(event.calendarId) }}
+                    aria-hidden="true"
+                  />
+                  <strong>{event.title}</strong>
+                </span>
                 <span>{event.start.slice(0, 10)}</span>
               </button>
             ))
@@ -1545,10 +1569,10 @@ function CalendarApp({
           }}
           headerToolbar={{
             left: sidebarSettings.enabled
-              ? 'fullScreen compactMenu sidebarToggle prev,next today'
-              : 'fullScreen compactMenu prev,next today',
+              ? 'fullScreen search compactMenu sidebarToggle prev,next today'
+              : 'fullScreen search compactMenu prev,next today',
             center: 'title',
-            right: `search dayGridMonth,timeGridWeek,timeGridDay,listMonth${onLogout && !sidebarVisible ? ' signOut' : ''}`,
+            right: `dayGridMonth,timeGridWeek,timeGridDay,listMonth${onLogout && !sidebarVisible ? ' signOut' : ''}`,
           }}
           buttonText={{
             today: 'Today',
@@ -1698,7 +1722,7 @@ function CalendarApp({
       )}
       {searchOpen && (
         <SearchOverlay
-          calendarIds={[...selected]}
+          calendars={calendars.filter((calendar) => selected.has(calendar.id))}
           onClose={() => setSearchOpen(false)}
           onSelect={(event) => {
             setSearchOpen(false);

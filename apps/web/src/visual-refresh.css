@@ -586,7 +586,7 @@ label,
   .fc .fc-header-toolbar {
     position: relative;
     grid-template-columns: minmax(0, 1fr);
-    padding-right: 6rem;
+    padding-right: 9rem;
   }
 
   .fc .fc-header-toolbar > .fc-toolbar-chunk:nth-child(2) {
@@ -608,7 +608,9 @@ label,
   .fc
     .fc-header-toolbar
     > .fc-toolbar-chunk:first-child
-    > :not(.fc-compactMenu-button):not(.fc-fullScreen-button),
+    > :not(.fc-compactMenu-button):not(.fc-fullScreen-button):not(
+      .fc-search-button
+    ),
   .fc .fc-header-toolbar > .fc-toolbar-chunk:last-child {
     display: none;
   }
@@ -655,6 +657,12 @@ label,
     right: 3rem;
   }
 
+  .fc .fc-search-button {
+    position: absolute;
+    top: 0;
+    right: 6rem;
+  }
+
   .calendar-controls-open .fc .fc-header-toolbar {
     grid-template-columns: minmax(0, 1fr) auto;
     padding-bottom: 0.15rem;
@@ -671,7 +679,9 @@ label,
     .fc
     .fc-header-toolbar
     > .fc-toolbar-chunk:first-child
-    > :not(.fc-compactMenu-button):not(.fc-fullScreen-button) {
+    > :not(.fc-compactMenu-button):not(.fc-fullScreen-button):not(
+      .fc-search-button
+    ) {
     display: inline-flex;
   }
 

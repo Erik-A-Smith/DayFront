@@ -63,7 +63,14 @@ describe('DayFront calendar', () => {
     const onSelect = vi.fn();
     render(
       <SearchOverlay
-        calendarIds={['personal']}
+        calendars={[
+          {
+            id: 'personal',
+            displayName: 'Personal',
+            color: '#123456',
+            components: ['VEVENT'],
+          },
+        ]}
         onClose={() => undefined}
         onSelect={onSelect}
       />,
@@ -75,7 +82,11 @@ describe('DayFront calendar', () => {
     fireEvent.change(input, { target: { value: 'paydy' } });
     expect(screen.getByText('No events found.')).toBeVisible();
     fireEvent.click(screen.getByRole('checkbox', { name: 'Fuzzy matching' }));
+    await waitFor(() => expect(input).toHaveFocus());
     expect(screen.getByText('Payday')).toBeVisible();
+    expect(document.querySelector('.search-result-color')).toHaveStyle({
+      backgroundColor: '#123456',
+    });
     fireEvent.change(input, { target: { value: 'payday' } });
     fireEvent.keyDown(input, { key: 'ArrowDown' });
     fireEvent.keyDown(input, { key: 'Enter' });

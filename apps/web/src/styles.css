@@ -1435,6 +1435,20 @@ input[type='checkbox']:disabled {
   cursor: pointer;
   text-align: left;
 }
+.search-result-title {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.65rem;
+}
+.search-result-color {
+  width: 0.65rem;
+  height: 0.65rem;
+  flex: 0 0 auto;
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentcolor 8%, transparent);
+}
 .search-results > button:hover,
 .search-results > button:focus-visible,
 .search-results > button.is-active {
