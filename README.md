@@ -142,6 +142,8 @@ docker compose up -d --build dayfront
 
 See [the deployment guide](docs/deployment.md) for Docker, Compose, Unraid, timezone, health-check, and reverse-proxy configuration.
 
+> **Using an HTTPS reverse proxy or tunnel?** Set `DAYFRONT_SERVER_TRUST_PROXY=true`. In Unraid, set **Reverse Proxy / Tunnel Access** to `true`. Login through the proxy will otherwise be rejected because DayFront cannot recognize the browser's HTTPS origin. Enable this only for a trusted proxy that overwrites forwarded headers.
+
 ## License
 
 DayFront is available under the [MIT License](LICENSE).

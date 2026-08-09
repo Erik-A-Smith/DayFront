@@ -71,7 +71,9 @@ The beta image tracks `main`. After beta validation, publish the compatible appl
 
 ## Reverse proxy
 
-Proxy the complete origin, including `/api/v1`, to port 8080. Require authentication at the proxy, disable API caching, and forward `Host`, `X-Forwarded-Proto`, and `X-Forwarded-For`. Set `DAYFRONT_SERVER_TRUST_PROXY=true` only if direct client access to DayFront is blocked. See [security.md](security.md) for the complete trust boundary.
+Proxy the complete origin, including `/api/v1`, to port 8080. Require authentication at the proxy, disable API caching, and forward `Host`, `X-Forwarded-Proto`, and `X-Forwarded-For`.
+
+**Login through an HTTPS reverse proxy or tunnel requires `DAYFRONT_SERVER_TRUST_PROXY=true`.** Without it, DayFront sees the proxy's internal HTTP connection instead of the browser's HTTPS connection and rejects login with `ORIGIN_REJECTED`. In the Unraid template, set **Reverse Proxy / Tunnel Access** to `true`. Enable proxy trust only when the proxy overwrites forwarded headers and direct client access to DayFront is blocked. See [security.md](security.md) for the complete trust boundary.
 
 ## Smoke test
 

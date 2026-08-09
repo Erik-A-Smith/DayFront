@@ -26,7 +26,9 @@ The reverse proxy should:
 - apply a request-body limit no larger than DayFront's 1 MiB limit;
 - avoid caching API responses containing calendar data.
 
-Set `server.trustProxy: true` (or `DAYFRONT_SERVER_TRUST_PROXY=true`) only when DayFront is directly behind a trusted proxy that overwrites forwarded headers. Leave it false when clients can connect directly. Proxy trust affects client-IP mutation limits and HTTPS/HSTS detection.
+**Login through an HTTPS reverse proxy or tunnel requires proxy trust.** Set `server.trustProxy: true` (or `DAYFRONT_SERVER_TRUST_PROXY=true`) or DayFront will reject login with `ORIGIN_REJECTED` because the browser's HTTPS origin does not match the proxy's internal HTTP connection. In the Unraid template, set **Reverse Proxy / Tunnel Access** to `true`.
+
+Enable proxy trust only when DayFront is directly behind a trusted proxy that overwrites forwarded headers. Leave it false when clients can connect directly. Proxy trust affects client-IP mutation limits and HTTPS/HSTS detection.
 
 DayFront does not enable cross-origin API access. Serve the frontend and API from the same origin. Browser security headers deny framing and restrict scripts, connections, forms, and resources to the DayFront origin.
 
