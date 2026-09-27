@@ -29,6 +29,15 @@ const calendarsBody = `<?xml version="1.0" encoding="utf-8"?>
   <d:prop><d:resourcetype/><d:displayname/><d:getetag/><c:calendar-description/><c:supported-calendar-component-set/><ical:calendar-color/><cs:getctag/></d:prop>
 </d:propfind>`;
 
+const proxiesBody = `<?xml version="1.0" encoding="utf-8"?>
+<d:propfind xmlns:d="DAV:" xmlns:cs="http://calendarserver.org/ns/">
+	<d:prop>
+		<d:group-membership/>
+		<cs:calendar-proxy-write-for/>
+		<cs:calendar-proxy-read-for/>
+	</d:prop>
+</d:propfind>`;
+
 export interface CalDavClientOptions {
   fetch?: typeof fetch;
 }
@@ -65,6 +74,28 @@ export class CalDavClient {
       );
     const principalUrl = this.resolveHref(principalHref).href;
 
+	const discoveryResults = await this.getCalendarsFromPrincipal(principalUrl);
+	let calendars = discoveryResults.calendars;
+
+    const proxies = await this.propfind(
+      principalUrl,
+      '0',
+      proxiesBody,
+    );
+	const properties = proxies[0].properties;
+
+	const calendarProxyReadFor = await this.getProxyCalendars(proxies[0].properties['calendar-proxy-read-for'].href, true);
+	calendars = calendars.concat(calendarProxyReadFor);
+	const calendarProxyWriteFor = await this.getProxyCalendars(proxies[0].properties['calendar-proxy-write-for'].href, false);
+	calendars = calendars.concat(calendarProxyWriteFor);
+
+	discoveryResults.calendars = calendars;
+	return discoveryResults;
+  }
+
+  async getCalendarsFromPrincipal(
+	  principalUrl: string
+  ): Promise<DiscoveryResult> {
     const homeProperties = await this.propfind(principalUrl, '0', homeBody);
     const homeHref = propertyHref(
       this.firstProperties(homeProperties, 'calendar-home-set'),
@@ -106,6 +137,35 @@ export class CalDavClient {
     );
 
     return { principalUrl, calendarHomeUrl, calendars };
+  }
+
+  async getProxyCalendars(
+	  proxyPrincipalUrls: undefined | string | string[],
+	  readOnly: boolean = false
+  ): Promise<CalendarCollection[]> {
+	console.log(proxyPrincipalUrls);
+	if (proxyPrincipalUrls === undefined) {
+		return [];
+	}
+
+	// needed since proxyPrincipalUrls is a string if it has 1 element, a list otherwise
+	if (!Array.isArray(proxyPrincipalUrls)) {
+		proxyPrincipalUrls = [proxyPrincipalUrls]
+	}
+
+	let proxyCalendars = await Promise.all(
+		proxyPrincipalUrls.map(
+			async (proxyPrincipal): CalendarCollection[] => {
+				const proxyPrincipalHref = this.resolveHref(proxyPrincipal).href;
+				const proxyPrincipalDiscovery = await this.getCalendarsFromPrincipal(proxyPrincipalHref);
+				proxyPrincipalDiscovery.calendars.forEach((c) => (c.readOnly = readOnly));
+				return proxyPrincipalDiscovery.calendars;
+			}
+		)
+	);
+	proxyCalendars = proxyCalendars.flat();
+
+	return proxyCalendars;
   }
 
   async queryCalendar(

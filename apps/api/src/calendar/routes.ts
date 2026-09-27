@@ -54,7 +54,7 @@ function toCalendar(collection: CalendarCollection): Calendar {
     ...(collection.description ? { description: collection.description } : {}),
     ...(collection.color ? { color: collection.color } : {}),
     components: [...collection.components],
-    readOnly: false,
+    readOnly: collection.readOnly,
   };
 }
 
