@@ -5,6 +5,7 @@ export interface CalendarCollection {
   description?: string;
   color?: string;
   components: readonly ('VEVENT' | 'VTODO' | 'VJOURNAL')[];
+  readOnly: boolean;
 }
 
 export interface CalendarResource {
