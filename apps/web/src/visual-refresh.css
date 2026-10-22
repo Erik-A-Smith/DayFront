@@ -1043,6 +1043,18 @@ label,
     inset 0 1px rgb(255 255 255 / 24%);
 }
 
+/* Past calendar events should remain readable but no longer draw attention. */
+.fc .fc-event.event-ended {
+  opacity: 0.58;
+  filter: grayscale(0.8);
+}
+
+.fc .fc-event.event-ended:hover,
+.fc .fc-event.event-ended:focus-visible {
+  opacity: 0.78;
+  filter: grayscale(0.6);
+}
+
 .fc .fc-event.fc-event-dragging,
 .fc .fc-event.fc-event-mirror,
 .fc .fc-event.fc-event-resizing {

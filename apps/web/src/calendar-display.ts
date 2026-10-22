@@ -1,4 +1,4 @@
-import type { CalendarTask } from '@dayfront/shared';
+import type { CalendarEvent, CalendarTask } from '@dayfront/shared';
 
 export function taskCalendarRange(
   task: Pick<CalendarTask, 'start' | 'due' | 'allDay'>,
@@ -19,4 +19,14 @@ export function taskCalendarRange(
     .toISOString()
     .slice(0, 10);
   return { start: task.start, end: exclusiveEnd };
+}
+
+/** Use DTEND when available: DTSTART alone does not tell us an event is over. */
+export function eventHasEnded(
+  event: Pick<CalendarEvent, 'end'>,
+  now: Date = new Date(),
+): boolean {
+  if (!event.end) return false;
+  const end = Date.parse(event.end);
+  return Number.isFinite(end) && end <= now.getTime();
 }

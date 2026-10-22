@@ -49,7 +49,7 @@ import {
 import { EventDialog } from './EventDialog.js';
 import type { TimeFormat } from './ClockInput.js';
 import { CalendarManager } from './CalendarManager.js';
-import { taskCalendarRange } from './calendar-display.js';
+import { eventHasEnded, taskCalendarRange } from './calendar-display.js';
 import { TaskDialog } from './TaskDialog.js';
 import { LoginPage } from './LoginPage.js';
 import { fuzzyTitleMatch } from './search.js';
@@ -837,6 +837,7 @@ function CalendarApp({
             editable: !event.readOnly,
             startEditable: !event.readOnly,
             durationEditable: false,
+            classNames: eventHasEnded(event) ? ['event-ended'] : [],
             extendedProps: event,
           };
         });
