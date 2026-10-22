@@ -210,7 +210,7 @@ function taskHierarchy(tasks: readonly CalendarTask[]) {
   };
 }
 
-function taskStatusInput(
+export function taskStatusInput(
   task: CalendarTask,
   status: 'needs-action' | 'completed',
 ): TaskMutation {
@@ -225,6 +225,14 @@ function taskStatusInput(
     priority: task.priority,
     recurrenceRule: task.recurrenceRule ?? null,
     ...(task.parentUid ? { parentUid: task.parentUid } : {}),
+    // A checkbox is a per-instance action, never an edit to the whole series.
+    ...(task.recurring && task.recurrenceId
+      ? {
+          recurrenceId: task.recurrenceId,
+          occurrenceStart: task.start ?? task.due,
+          recurrenceScope: 'occurrence' as const,
+        }
+      : {}),
   };
 }
 
