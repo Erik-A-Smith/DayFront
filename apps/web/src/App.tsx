@@ -49,7 +49,7 @@ import {
 import { EventDialog } from './EventDialog.js';
 import type { TimeFormat } from './ClockInput.js';
 import { CalendarManager } from './CalendarManager.js';
-import { taskCalendarRange } from './calendar-display.js';
+import { showTaskOnCalendar, taskCalendarRange } from './calendar-display.js';
 import { TaskDialog } from './TaskDialog.js';
 import { LoginPage } from './LoginPage.js';
 import { fuzzyTitleMatch } from './search.js';
@@ -845,7 +845,12 @@ function CalendarApp({
         );
         calendarEntries.push(
           ...tasks.flatMap((task) => {
-            if (task.parentUid || linkedChildren.has(task.uid)) return [];
+            if (
+              task.parentUid ||
+              linkedChildren.has(task.uid) ||
+              !showTaskOnCalendar(task)
+            )
+              return [];
             const range = taskCalendarRange(task);
             if (!range) return [];
             const color = colors.get(task.calendarId) ?? '#5b8def';

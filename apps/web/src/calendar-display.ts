@@ -20,3 +20,14 @@ export function taskCalendarRange(
     .slice(0, 10);
   return { start: task.start, end: exclusiveEnd };
 }
+
+/** Completed/cancelled VTODOs stay in the sidebar, not on the calendar grid. */
+export function showTaskOnCalendar(
+  task: Pick<CalendarTask, 'completed' | 'status'>,
+): boolean {
+  return (
+    !task.completed &&
+    task.status !== 'completed' &&
+    task.status !== 'cancelled'
+  );
+}
