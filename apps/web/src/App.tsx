@@ -63,6 +63,7 @@ const entrySymbols = {
 export function CalendarEntryContent({
   entry,
   timeText,
+  onCompleteTask,
 }: {
   entry: {
     entryType: 'event' | 'note' | 'todo';
@@ -70,12 +71,28 @@ export function CalendarEntryContent({
     recurring: boolean;
   };
   timeText: string;
+  onCompleteTask?: () => void;
 }) {
   const type = entrySymbols[entry.entryType];
   return (
     <span className="calendar-entry-content">
       {timeText && <span className="calendar-entry-time">{timeText}</span>}
       <span className="calendar-entry-title">{entry.title}</span>
+      {entry.entryType === 'todo' && onCompleteTask && (
+        <button
+          type="button"
+          className="calendar-task-complete"
+          aria-label={`Complete ${entry.title}`}
+          title="Mark task complete"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onCompleteTask();
+          }}
+        >
+          ✓
+        </button>
+      )}
       <span
         className={`calendar-entry-icon calendar-entry-type calendar-entry-${entry.entryType}`}
         aria-label={type.label}
@@ -1167,6 +1184,41 @@ function CalendarApp({
     setTaskEditorReturn(undefined);
   }
 
+  async function completeCalendarTask(task: CalendarTask) {
+    if (updatingTaskIds.has(task.id)) return;
+    setUpdatingTaskIds((current) => new Set(current).add(task.id));
+    try {
+      await updateTask(task.resourceId, task.version, {
+        ...taskStatusInput(task, 'completed'),
+        // Completing a calendar occurrence must never complete its entire series.
+        ...(task.recurring && task.recurrenceId
+          ? {
+              recurrenceId: task.recurrenceId,
+              occurrenceStart: task.start ?? task.due,
+              recurrenceScope: 'occurrence' as const,
+            }
+          : {}),
+      });
+      const failed = await completeDescendants(task);
+      if (failed)
+        setError(
+          `The task was completed, but ${failed} subtasks could not be completed.`,
+        );
+      await refreshTasks();
+    } catch {
+      setError(
+        'The task could not be completed. The calendar has been refreshed.',
+      );
+      await refreshTasks().catch(() => undefined);
+    } finally {
+      setUpdatingTaskIds((current) => {
+        const next = new Set(current);
+        next.delete(task.id);
+        return next;
+      });
+    }
+  }
+
   async function toggleSubtask(task: CalendarTask, completed: boolean) {
     if (updatingTaskIds.has(task.id)) return;
     setUpdatingTaskIds((current) => new Set(current).add(task.id));
@@ -1655,13 +1707,21 @@ function CalendarApp({
             const entry = calendarEventSchema
               .or(calendarTaskSchema)
               .safeParse(info.event.extendedProps);
-            return entry.success ? (
+            if (!entry.success) return info.event.title;
+            const task = calendarTaskSchema.safeParse(entry.data);
+            return (
               <CalendarEntryContent
                 entry={entry.data}
                 timeText={info.timeText}
+                {...(task.success &&
+                !task.data.completed &&
+                task.data.status !== 'cancelled'
+                  ? {
+                      onCompleteTask: () =>
+                        void completeCalendarTask(task.data),
+                    }
+                  : {})}
               />
-            ) : (
-              info.event.title
             );
           }}
           eventDrop={(info) => void moveCalendarEntry(info)}
@@ -1683,6 +1743,12 @@ function CalendarApp({
               : []
           }
           eventClick={(info) => {
+            if (
+              (info.jsEvent.target as HTMLElement)?.closest(
+                '.calendar-task-complete',
+              )
+            )
+              return;
             const task = calendarTaskSchema.safeParse(info.event.extendedProps);
             if (task.success) {
               setTaskInitialDate(undefined);

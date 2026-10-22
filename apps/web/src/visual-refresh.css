@@ -1043,6 +1043,26 @@ label,
     inset 0 1px rgb(255 255 255 / 24%);
 }
 
+.fc .calendar-task-complete {
+  display: inline-grid;
+  flex: 0 0 auto;
+  width: 1.2rem;
+  height: 1.2rem;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+.fc .calendar-task-complete:hover,
+.fc .calendar-task-complete:focus-visible {
+  opacity: 1;
+  background: rgb(255 255 255 / 20%);
+}
+
 .fc .fc-event.fc-event-dragging,
 .fc .fc-event.fc-event-mirror,
 .fc .fc-event.fc-event-resizing {
