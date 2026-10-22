@@ -134,6 +134,24 @@ export function TaskDialog({
     event.preventDefault();
     if (operation.current) return;
     if (task?.recurring && task.recurrenceId && !movingRecurringSeries) {
+      const onlyStatusChanged =
+        !simple &&
+        status !== task.status &&
+        title === task.title &&
+        calendarId === task.calendarId &&
+        allDay === task.allDay &&
+        start === (task.start ? localValue(task.start, task.allDay) : '') &&
+        due === (task.due ? localValue(task.due, task.allDay) : '') &&
+        description === (task.description ?? '') &&
+        priority === task.priority &&
+        recurrence === initialRuleChoice &&
+        (recurrence !== 'custom' ||
+          customRule === (task.recurrenceRule ?? '')) &&
+        draftSubtasks.length === 0;
+      if (onlyStatusChanged) {
+        await save('occurrence');
+        return;
+      }
       setPendingAction('save');
       return;
     }

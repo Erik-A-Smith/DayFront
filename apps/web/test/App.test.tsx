@@ -1145,6 +1145,52 @@ describe('DayFront calendar', () => {
     );
   });
 
+  it('saves a status-only recurring task change for this occurrence without a scope prompt', async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined);
+    render(
+      <TaskDialog
+        calendars={[
+          { id: 'personal', displayName: 'Personal', components: ['VTODO'] },
+        ]}
+        task={{
+          id: 'routine-occurrence',
+          resourceId: 'routine-resource',
+          calendarId: 'personal',
+          uid: 'routine',
+          title: 'Daily routine',
+          start: '2026-08-04',
+          due: '2026-08-04',
+          allDay: true,
+          status: 'needs-action',
+          completed: false,
+          priority: 0,
+          version: 'v1',
+          entryType: 'todo',
+          recurring: true,
+          recurrenceRule: 'FREQ=DAILY',
+          recurrenceId: '2026-08-04',
+        }}
+        onCancel={() => undefined}
+        onSave={onSave}
+      />,
+    );
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Completed' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(
+      screen.queryByRole('heading', { name: 'Apply changes to…' }),
+    ).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(onSave).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'completed',
+          recurrenceScope: 'occurrence',
+          recurrenceId: '2026-08-04',
+        }),
+        [],
+      ),
+    );
+  });
+
   it('prompts for scope when saving a recurring task occurrence', async () => {
     const onSave = vi.fn().mockResolvedValue(undefined);
     render(
